@@ -34,6 +34,13 @@ import numpy as np
 import requests
 
 REPO = Path(__file__).resolve().parent.parent
+# The candidate marker is shared with the training annotator rather than reimplemented here:
+# two copies of "which box am I asking about" would drift, and a drifted marker silently
+# relabels data. See engine.preprocess.mark_candidate.
+sys.path.insert(0, str(REPO / "detector"))
+
+from engine.preprocess import mark_candidate
+
 PROMPT_PATH = REPO / "backend" / "internal" / "detector" / "vlm" / "prompts" / "adjudicate.txt"
 
 BATCH = 20
@@ -42,7 +49,14 @@ CROP_PX = 96      # rendered size handed to the model
 
 
 def crop_around(gray: np.ndarray, bbox: list[int]) -> np.ndarray:
-    """Cut a padded, size-normalised crop centred on a candidate."""
+    """Cut a padded, size-normalised crop centred on a candidate, with the candidate ringed.
+
+    The ring is not decoration. Without it, a crop at CONTEXT=3.0 on a dense form shows two or
+    three checkboxes and the annotator judges whichever one carries a mark. That produced every
+    error in the first ground-truth file: on sample_1, fourteen candidates with exactly 0.0%
+    interior ink were labelled "checked", each directly above or below a marked box, and the
+    detector was scored wrong for being right. See engine.preprocess.mark_candidate.
+    """
     x1, y1, x2, y2 = bbox
     cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
     half = max(12, int(max(x2 - x1, y2 - y1) * CONTEXT / 2))
@@ -56,7 +70,8 @@ def crop_around(gray: np.ndarray, bbox: list[int]) -> np.ndarray:
     patch = padded[cy - half:cy + half, cx - half:cx + half]
     if patch.size == 0:
         patch = np.full((CROP_PX, CROP_PX), 255, np.uint8)
-    return cv2.resize(patch, (CROP_PX, CROP_PX), interpolation=cv2.INTER_AREA)
+    patch = cv2.resize(patch, (CROP_PX, CROP_PX), interpolation=cv2.INTER_AREA)
+    return mark_candidate(patch, CONTEXT)
 
 
 def verdict_tool() -> dict:

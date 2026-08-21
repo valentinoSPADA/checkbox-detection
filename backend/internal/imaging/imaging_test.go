@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"image"
 	"image/color"
+	"image/draw"
 	"image/jpeg"
 	"image/png"
 	"testing"
@@ -208,4 +209,57 @@ func TestCropCopiesRatherThanAliasing(t *testing.T) {
 	if r == 0 {
 		t.Fatal("the crop aliases the source buffer")
 	}
+}
+
+// TestOutline covers the marker that tells the adjudicator which box it is judging. The
+// properties that matter are that it is drawn, that it is drawn in the right place, and that
+// a candidate near a crop edge still gets whatever sides fit rather than none.
+func TestOutline(t *testing.T) {
+	white := image.NewRGBA(image.Rect(0, 0, 40, 40))
+	draw.Draw(white, white.Bounds(), image.NewUniform(color.White), image.Point{}, draw.Src)
+	red := color.RGBA{R: 255, A: 255}
+
+	t.Run("draws the four sides and leaves the interior alone", func(t *testing.T) {
+		out := Outline(white, image.Rect(10, 10, 30, 30), red, 2)
+		for _, p := range []image.Point{{X: 10, Y: 10}, {X: 29, Y: 10}, {X: 10, Y: 29}, {X: 29, Y: 29}} {
+			if r, _, _, _ := out.At(p.X, p.Y).RGBA(); r>>8 != 255 {
+				t.Fatalf("expected marker at %v", p)
+			}
+		}
+		// The interior is what is being judged; covering it would defeat the purpose.
+		if _, g, _, _ := out.At(20, 20).RGBA(); g>>8 != 255 {
+			t.Fatal("marker intruded on the judged interior")
+		}
+	})
+
+	t.Run("clips per side so an edge candidate keeps the sides that fit", func(t *testing.T) {
+		out := Outline(white, image.Rect(-5, 10, 20, 30), red, 2)
+		if _, g, _, _ := out.At(19, 20).RGBA(); g>>8 != 0 {
+			t.Fatal("the right-hand side should still be drawn")
+		}
+	})
+
+	t.Run("returns a drawable copy for a non-drawable source", func(t *testing.T) {
+		// *image.YCbCr is bounded but not draw.Image -- the shape a JPEG decodes to. The
+		// function must copy it rather than fail, since Decode hands JPEGs straight through.
+		src := image.NewYCbCr(image.Rect(0, 0, 20, 20), image.YCbCrSubsampleRatio444)
+		out := Outline(src, image.Rect(4, 4, 16, 16), red, 2)
+		if _, ok := out.(draw.Image); !ok {
+			t.Fatal("expected a drawable copy")
+		}
+		if r, _, _, _ := out.At(4, 4).RGBA(); r>>8 != 255 {
+			t.Fatal("the copy should carry the marker")
+		}
+	})
+
+	t.Run("a zero-width request still marks", func(t *testing.T) {
+		out := Outline(white, image.Rect(5, 5, 15, 15), red, 0)
+		if _, g, _, _ := out.At(5, 5).RGBA(); g>>8 != 0 {
+			t.Fatal("width below 1 should clamp to 1, not skip the marker")
+		}
+	})
+
+	t.Run("an off-image rectangle is a no-op, not a panic", func(t *testing.T) {
+		Outline(white, image.Rect(100, 100, 120, 120), red, 2)
+	})
 }

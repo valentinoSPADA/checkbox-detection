@@ -91,3 +91,41 @@ def crop_with_context(gray: np.ndarray, x: int, y: int, w: int, h: int,
         patch = np.full((out, out), 255, np.uint8)
     patch = cv2.resize(patch, (out, out), interpolation=cv2.INTER_AREA)
     return patch.astype(np.float32) / 255.0
+
+
+# Ring colour for the annotator crop, BGR. Pure red: appraisal scans are black on white, so
+# no red can be mistaken for ink, and the prompt can name the colour without ambiguity.
+_MARKER_BGR = (0, 0, 255)
+_MARKER_PX = 2
+
+
+def mark_candidate(patch: np.ndarray, context: float) -> np.ndarray:
+    """Ring the centred candidate inside a wide judging crop, returning a BGR image.
+
+    A crop cut at `context` times a checkbox's own size shows its neighbours too, and a model
+    asked "is this checked?" answers about whichever box carries a mark. Measured on sample_1,
+    that was the sole cause of every disagreement between Claude's verdicts and the pixels:
+    fourteen candidates with exactly 0.0% interior ink labelled "checked", each one sitting
+    directly above or below a marked box. The adjudication prompt already said to ignore
+    neighbours and that was not enough -- the model cannot reliably tell which box is "the
+    centre one" when boxes tile the region. Drawing the referent removes the inference.
+
+    The ring is placed just OUTSIDE the candidate so it never covers the mark under judgement.
+    Accepts either float [0,1] or uint8 input, since callers differ.
+
+    Args:
+        patch: square crop, grayscale, centred on the candidate.
+        context: the multiple the crop was cut at; the candidate occupies 1/context of a side.
+
+    Returns:
+        BGR uint8 image of the same size, with the candidate ringed.
+    """
+    if patch.dtype != np.uint8:
+        patch = (np.clip(patch, 0.0, 1.0) * 255).astype(np.uint8)
+    out = cv2.cvtColor(patch, cv2.COLOR_GRAY2BGR)
+    side = out.shape[0]
+    half = max(1, round(side / (2 * max(context, 1.0))))
+    c = side // 2
+    cv2.rectangle(out, (c - half - _MARKER_PX, c - half - _MARKER_PX),
+                  (c + half + _MARKER_PX, c + half + _MARKER_PX), _MARKER_BGR, _MARKER_PX)
+    return out

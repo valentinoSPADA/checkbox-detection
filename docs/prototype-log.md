@@ -80,3 +80,52 @@ than anyone enumerates in an afternoon.
 **Conclusion.** The remaining error is a labelled-data problem, not a tuning problem. That is
 what `detector/training/annotate.py` exists for — Claude labels real Stage 1 proposals, and
 the small model trains on the real distribution instead of an imagined one.
+
+## The measurement was wrong before the model was: unmarked adjudication crops
+
+Investigating a request to visualise sample 1's detections turned up a defect in the *scoring*
+rather than the detector. At threshold 0.95 the engine returns 117 boxes on sample 1 — the
+ground truth also holds 117 — and 14 of them disagreed on filled/unfilled.
+
+Every one of the 14 ran the same direction: engine "unchecked", ground truth "checked". A
+one-directional error is a signature, not noise, so the boxes were measured directly rather
+than argued about. Ink inside the candidate's own border, with the border ring excluded:
+
+| | median interior ink |
+|---|---|
+| engine says checked (36 boxes) | 0.219 |
+| engine says unchecked (81 boxes) | 0.000 |
+| **the 14 disputed** | **0.000, all fourteen** |
+
+Not "low". Zero, in all fourteen. The boxes are empty and the engine was right about every
+one of them; sample 1's real filled/unfilled accuracy at this threshold is **1.000**, not the
+0.869 on record.
+
+**Cause.** `build_ground_truth.py`, `annotate.py` and the Go adapter's `cropAround` all cut the
+judging crop at 3.0x the candidate's own size. Context is what makes the judgement possible —
+it is how a checkbox is told from a small table cell — but on a URAR form a window that wide
+contains two or three checkboxes stacked vertically. Every one of the 14 sits directly above
+or below a box carrying an X. The model was asked "is this checked?" about a picture
+containing an X, and said yes.
+
+**What did not work.** The prompt already carried the instruction: *"The region is centred on
+the candidate; ignore other checkboxes near the edges of the crop."* It is a correct
+instruction and it did not hold, because when boxes tile the region uniformly, "the centred
+one" is a judgement the model has to make before it can follow the rule.
+
+**Fix.** Stop describing the referent and draw it. `imaging.Outline` (Go) and
+`engine.preprocess.mark_candidate` (Python) ring the candidate in red — outside its own edge,
+so the mark under judgement is never covered — and the prompt now names the ring and states
+explicitly that a marked neighbour is irrelevant. Red because these scans are black on white:
+nothing red survives binarisation to be mistaken for ink.
+
+**Why this mattered more than the metric.** The same crop path serves the `assisted` engine at
+runtime, so every escalated candidate was being adjudicated with the same ambiguity — the
+escalation was importing the defect into live answers, not just into the scorecard. And it
+would have propagated straight into the retraining set: `annotate.py`'s whole purpose is to
+label real proposals, and unmarked crops would have taught the small model that a blank box
+beside a marked one is itself marked. The bug was one run away from being baked into weights.
+
+**Cost of the correction.** The published results table is left as measured; regenerating it
+means re-running the adjudicator against the API, which costs credit. Every filled/unfilled
+figure in the README is therefore a floor, and says so.

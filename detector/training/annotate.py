@@ -42,7 +42,7 @@ import numpy as np
 
 from engine.classifier import CheckboxClassifier, ModelUnavailableError
 from engine.pipeline import _collapse_duplicates
-from engine.preprocess import binarize, crop_with_context, decode, to_gray
+from engine.preprocess import binarize, crop_with_context, decode, mark_candidate, to_gray
 from engine.proposals import propose
 
 REPO = Path(__file__).resolve().parent.parent.parent
@@ -84,7 +84,7 @@ def stratified_sample(scores: np.ndarray, n: int, rng: np.random.Generator) -> n
 
 
 def encode_png(patch: np.ndarray) -> str:
-    """Encode a grayscale crop as base64 PNG for the model."""
+    """Encode a crop as base64 PNG for the model (grayscale or BGR; both encode fine)."""
     ok, buf = cv2.imencode(".png", patch)
     if not ok:
         raise RuntimeError("failed to encode crop")
@@ -214,7 +214,10 @@ def main() -> int:
         labelled = 0
         for start in range(0, len(chosen), BATCH):
             idx_slice = chosen[start:start + BATCH]
-            patches = [(judge_input[k] * 255).astype(np.uint8)
+            # Ringed, not bare: see mark_candidate. Labelling a wide crop without marking
+            # which box is the subject teaches the model that a blank box beside a marked one
+            # is itself marked -- the exact defect this pipeline exists to remove.
+            patches = [mark_candidate(judge_input[k], ANNOT_CONTEXT)
                        for k in range(start, min(start + BATCH, len(chosen)))]
             try:
                 verdicts = annotate_batch(client, args.model, prompt, patches)

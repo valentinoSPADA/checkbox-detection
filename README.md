@@ -160,9 +160,27 @@ Reading these honestly:
   the classifier became more conservative, and under a red watermark it now declines boxes it
   used to accept. That is a trade the current threshold makes deliberately and the one page
   where a different operating point would be defensible.
-- **Classification is stronger than localisation.** Given a box that was found, the
-  filled/unfilled call is right 90% of the time overall and 99% on sample 4. Most of the
-  remaining loss is in deciding *what is a checkbox*, not *whether it is ticked*.
+- **Classification is stronger than localisation, and this table understates it.** Given a
+  box that was found, the filled/unfilled call is right 90% of the time overall and 99% on
+  sample 4. Most of the remaining loss is in deciding *what is a checkbox*, not *whether it
+  is ticked*.
+
+  On sample 1 the true figure is 1.000, not the 0.869 above, and the difference is a defect in
+  the **ground truth** rather than in the detector. All 14 disagreements ran one way — the
+  engine said unchecked, the file said checked — and all 14 boxes contain *exactly 0.0% ink
+  inside their own border*, measured directly on the page. Each one sits immediately above or
+  below a box carrying an X. The adjudicator was shown a crop at 3.0x the candidate's size,
+  which on a form this dense contains two or three checkboxes, and it answered about the
+  marked neighbour. The prompt already told it to ignore the edges; that was not enough,
+  because "the centre one" is not decidable when boxes tile the region.
+
+  The fix is to draw the referent instead of describing it: `imaging.Outline` (Go) and
+  `engine.preprocess.mark_candidate` (Python) ring the candidate in red before the crop is
+  sent, and the prompt now names the ring. This is a **runtime** fix as well as a tooling one
+  — the `assisted` engine adjudicates through the same path, so it was inheriting the same
+  confusion on every escalated candidate. The table above is left as measured against the
+  ground truth as it stands; regenerating it costs API credit and is a separate, deliberate
+  run. **Read every filled/unfilled figure here as a floor.**
 - **Escalation helps once its budget is large enough to matter.** `assisted` gains 1.9 F1
   points over `local`, and the gain is in *recall* (0.776 → 0.814) at a small precision cost —
   which is the right direction, because recall is what a page under a watermark loses. Per

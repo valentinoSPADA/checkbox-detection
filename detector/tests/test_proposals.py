@@ -12,7 +12,7 @@ import cv2
 import numpy as np
 import pytest
 
-from engine.preprocess import binarize, crop_with_context, decode, to_gray
+from engine.preprocess import binarize, crop_with_context, decode, mark_candidate, to_gray
 from engine.proposals import MAX_SIDE, MIN_SIDE, Proposal, _run_lengths, propose
 
 
@@ -194,3 +194,48 @@ class TestPreprocess:
         img = page(50, 50)
         patch = crop_with_context(img, 49, 49, 1, 1, context=1.0, out=40)
         assert patch.shape == (40, 40)
+
+
+class TestMarkCandidate:
+    """The ring must land on the candidate, and must not cover it.
+
+    These assertions are about position, not aesthetics: a ring drawn over the candidate's
+    interior would hide the very mark the annotator is asked to judge, and a ring drawn in the
+    wrong place would point at a neighbour -- which is the defect it exists to fix.
+    """
+
+    def test_ring_surrounds_the_centre_without_covering_it(self):
+        patch = np.full((96, 96), 255, np.uint8)
+        out = mark_candidate(patch, context=3.0)
+        assert out.shape == (96, 96, 3)
+
+        # The candidate occupies a third of the side, so its interior is the middle ~32 px.
+        interior = out[42:54, 42:54]
+        assert (interior == 255).all(), "the ring must not intrude on the judged interior"
+
+        red = (out[:, :, 2] == 255) & (out[:, :, 0] == 0) & (out[:, :, 1] == 0)
+        assert red.any(), "a marker must actually be drawn"
+
+        ys, xs = np.nonzero(red)
+        # Centred, and sized to the candidate rather than to the crop.
+        assert abs((ys.min() + ys.max()) / 2 - 48) <= 1
+        assert abs((xs.min() + xs.max()) / 2 - 48) <= 1
+        assert 30 <= (xs.max() - xs.min()) <= 44
+
+    def test_accepts_float_input_from_crop_with_context(self):
+        # annotate.py passes float32 [0,1]; build_ground_truth.py passes uint8.
+        out = mark_candidate(np.zeros((96, 96), np.float32), context=3.0)
+        assert out.dtype == np.uint8
+        red = (out[:, :, 2] == 255) & (out[:, :, 0] == 0) & (out[:, :, 1] == 0)
+        assert red.any()
+
+    def test_ring_scales_with_the_context_factor(self):
+        """A wider crop means a proportionally smaller candidate, so a smaller ring."""
+        def span(ctx):
+            # All three channels: on a white patch the red channel alone is 255 everywhere.
+            out = mark_candidate(np.full((96, 96), 255, np.uint8), ctx)
+            red = (out[:, :, 2] == 255) & (out[:, :, 0] == 0) & (out[:, :, 1] == 0)
+            xs = np.nonzero(red)[1]
+            return xs.max() - xs.min()
+
+        assert span(1.5) > span(3.0) > span(6.0)

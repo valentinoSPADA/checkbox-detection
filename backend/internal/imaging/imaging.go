@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/color"
 	"image/draw"
 	_ "image/gif"  // registered for decoding only
 	_ "image/jpeg" // registered for decoding only
@@ -148,4 +149,45 @@ func clamp(v, lo, hi int) int {
 		return hi
 	}
 	return v
+}
+
+// Outline draws a hollow rectangle of the given width onto img, in place where possible.
+//
+// Exists for one reason: a crop cut around a checkbox on a dense form contains the candidate's
+// NEIGHBOURS, and a model asked "is this checked?" will happily answer about the wrong box.
+// Measured on sample_1, that mistake accounted for every single disagreement between the
+// adjudicator and the pixels -- fourteen boxes with exactly 0.0% interior ink reported as
+// checked, each one sitting directly above or below a marked box. Words alone did not fix it
+// (the prompt already said to ignore the edges); a visible marker does, because it removes the
+// ambiguity instead of asking the model to resolve it.
+//
+// Returns an RGBA copy when img is not already drawable, so callers need not care which. The
+// source must be bounded; an unbounded image such as image.Uniform is not a meaningful input.
+func Outline(img image.Image, r image.Rectangle, col color.Color, width int) image.Image {
+	if width < 1 {
+		width = 1
+	}
+	dst, ok := img.(draw.Image)
+	if !ok {
+		b := img.Bounds()
+		rgba := image.NewRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
+		draw.Draw(rgba, rgba.Bounds(), img, b.Min, draw.Src)
+		dst = rgba
+	}
+	r = r.Intersect(dst.Bounds())
+	if r.Empty() {
+		return dst
+	}
+	src := image.NewUniform(col)
+	// Four bands rather than a stroked path: the edges are clipped independently, so a marker
+	// on a candidate touching the crop border degrades to the sides that fit instead of vanishing.
+	for _, band := range []image.Rectangle{
+		image.Rect(r.Min.X, r.Min.Y, r.Max.X, r.Min.Y+width),
+		image.Rect(r.Min.X, r.Max.Y-width, r.Max.X, r.Max.Y),
+		image.Rect(r.Min.X, r.Min.Y, r.Min.X+width, r.Max.Y),
+		image.Rect(r.Max.X-width, r.Min.Y, r.Max.X, r.Max.Y),
+	} {
+		draw.Draw(dst, band.Intersect(dst.Bounds()), src, image.Point{}, draw.Src)
+	}
+	return dst
 }

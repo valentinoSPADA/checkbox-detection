@@ -16,6 +16,7 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"image/color"
 	"sync"
 
 	"github.com/anthropics/anthropic-sdk-go"
@@ -499,8 +500,26 @@ func (c *Client) callVerdicts(ctx context.Context, blocks []anthropic.ContentBlo
 	return nil, ErrNoStructuredOutput
 }
 
+// markerColour is the ring drawn around the candidate. Pure red is deliberate: appraisal
+// scans are black on white, so no red survives binarisation to be confused with ink, and the
+// prompt can name the colour unambiguously.
+var markerColour = color.RGBA{R: 255, A: 255}
+
+// markerWidth in pixels of the source page, before any downscale the encoder applies.
+const markerWidth = 2
+
 // cropAround cuts a padded region centred on box, so the model can see whether the candidate
 // sits in whitespace or inside a table -- the context that decides most of these calls.
+//
+// The region is then MARKED: a red ring is drawn just outside the candidate. Context is what
+// makes the judgement possible and is also what makes it ambiguous, because at factor 3 a
+// crop on a dense form contains two or three other checkboxes. Measured on sample_1, every
+// disagreement between the adjudicator and the pixels was this exact confusion -- fourteen
+// candidates with 0.0% interior ink judged "checked", each sitting directly beneath or above
+// a marked box. The prompt already instructed the model to ignore neighbours; instructions
+// did not carry it, and a marker does, because it makes the referent visible rather than
+// inferable. The ring is drawn OUTSIDE the candidate's own edge so it never covers the mark
+// that is being judged.
 func cropAround(src image.Image, box domain.Box, factor float64) image.Image {
 	if factor < 1 {
 		factor = 3.0
@@ -510,7 +529,22 @@ func cropAround(src image.Image, box domain.Box, factor float64) image.Image {
 	if half < 12 {
 		half = 12
 	}
-	return imaging.Crop(src, image.Rect(cx-half, cy-half, cx+half, cy+half))
+	patch := imaging.Crop(src, image.Rect(cx-half, cy-half, cx+half, cy+half))
+
+	// The crop is clamped to the page, so the candidate is only centred when it is not near an
+	// edge; offset the ring by however much the clamp actually removed.
+	dx, dy := cx-half, cy-half
+	if dx > 0 {
+		dx = 0
+	}
+	if dy > 0 {
+		dy = 0
+	}
+	ring := image.Rect(
+		box.X1-(cx-half)+dx-markerWidth, box.Y1-(cy-half)+dy-markerWidth,
+		box.X2-(cx-half)+dx+markerWidth, box.Y2-(cy-half)+dy+markerWidth,
+	)
+	return imaging.Outline(patch, ring, markerColour, markerWidth)
 }
 
 func clamp01(v, def float64) float64 {

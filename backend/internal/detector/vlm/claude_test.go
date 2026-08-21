@@ -7,6 +7,7 @@ import (
 	"errors"
 	"image"
 	"image/color"
+	"image/draw"
 	"image/png"
 	"net/http"
 	"net/http/httptest"
@@ -493,5 +494,72 @@ func TestAdjudicateSurvivesPartialBatchFailure(t *testing.T) {
 	}
 	if judged == 0 {
 		t.Fatal("no verdicts survived a single batch failure")
+	}
+}
+
+// TestCropAroundMarksTheCandidate pins the fix for the defect that produced every
+// classification disagreement measured on sample_1: at context 3.0 a crop on a dense
+// appraisal form contains the candidate's neighbours, and the model judged whichever box
+// carried a mark. Fourteen candidates with 0.0% interior ink came back "checked", each one
+// directly above or below a marked box.
+//
+// The marker is therefore load-bearing, not cosmetic, and these assertions state the two
+// properties that make it work: it lands on the candidate, and it does not cover it.
+func TestCropAroundMarksTheCandidate(t *testing.T) {
+	src := image.NewRGBA(image.Rect(0, 0, 300, 300))
+	draw.Draw(src, src.Bounds(), image.NewUniform(color.White), image.Point{}, draw.Src)
+	box := domain.NewBox(140, 140, 160, 160)
+
+	out := cropAround(src, box, 3.0)
+	isMarker := func(x, y int) bool {
+		r, g, b, _ := out.At(x, y).RGBA()
+		return r>>8 == 255 && g>>8 == 0 && b>>8 == 0
+	}
+
+	// The crop is 60x60 centred on the box, so the box sits at 20..40 within it.
+	if !isMarker(18, 18) {
+		t.Error("no marker on the candidate's top-left corner")
+	}
+	if isMarker(30, 30) {
+		t.Error("the marker covers the interior the model is asked to judge")
+	}
+
+	var marked int
+	for y := 0; y < out.Bounds().Dy(); y++ {
+		for x := 0; x < out.Bounds().Dx(); x++ {
+			if isMarker(x, y) {
+				marked++
+			}
+		}
+	}
+	if marked == 0 {
+		t.Fatal("candidate was not marked at all")
+	}
+	// A ring, not a fill: a marker covering most of the crop would hide the context that the
+	// wide crop exists to provide.
+	if area := out.Bounds().Dx() * out.Bounds().Dy(); marked > area/4 {
+		t.Errorf("marker covers %d of %d pixels; expected a thin ring", marked, area)
+	}
+}
+
+// TestCropAroundMarksCandidatesClampedToTheEdge covers the case the offset arithmetic exists
+// for: near a page edge the crop is clipped, so the candidate is no longer centred in it. A
+// marker computed as "the middle of the patch" would point at empty paper instead.
+func TestCropAroundMarksCandidatesClampedToTheEdge(t *testing.T) {
+	src := image.NewRGBA(image.Rect(0, 0, 300, 300))
+	draw.Draw(src, src.Bounds(), image.NewUniform(color.White), image.Point{}, draw.Src)
+
+	out := cropAround(src, domain.NewBox(0, 0, 20, 20), 3.0)
+	var found bool
+	for y := 0; y < out.Bounds().Dy() && !found; y++ {
+		for x := 0; x < out.Bounds().Dx(); x++ {
+			if r, g, b, _ := out.At(x, y).RGBA(); r>>8 == 255 && g>>8 == 0 && b>>8 == 0 {
+				found = true
+				break
+			}
+		}
+	}
+	if !found {
+		t.Fatal("a candidate in the page corner lost its marker entirely")
 	}
 }
