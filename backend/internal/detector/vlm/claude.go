@@ -88,7 +88,7 @@ func New(cfg Config) (*Client, error) {
 	}
 	c := &Client{
 		api:         anthropic.NewClient(option.WithAPIKey(cfg.APIKey)),
-		model:       orString(cfg.Model, "claude-opus-5"),
+		model:       orString(cfg.Model, "claude-haiku-4-5"),
 		maxImageDim: orInt(cfg.MaxImageDim, 1568),
 		tileRows:    orInt(cfg.TileRows, DefaultTileRows),
 		tileCols:    orInt(cfg.TileCols, DefaultTileCols),

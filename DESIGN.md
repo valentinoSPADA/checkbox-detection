@@ -134,3 +134,95 @@ policy). Shared box geometry is kept minimal and the split is documented to keep
 
 **Would reconsider if**: The policy stayed trivial enough to be a single threshold, in which
 case pushing it into the sidecar and letting Go be a thin gateway would be the simpler design.
+
+## 6. Claude Haiku 4.5 as the default model
+
+**Decision**: Both Claude-backed paths -- the `vlm` engine and the offline annotator -- default
+to `claude-haiku-4-5` rather than a frontier model, overridable via `ANTHROPIC_MODEL`.
+
+**Why**: Measured against the two jobs actually being asked of the model. Annotation sends
+96x96 crops, roughly 12 image tokens each, so labelling 1600 real proposals costs about $0.17
+on Haiku against $0.86 on Opus 5 -- both negligible. The `vlm` engine is where spend actually
+lives: eight ~1400 px tiles per page is about $0.12 a page on Haiku against $0.58 on Opus 5.
+Since that engine is a demonstration of AI integration rather than the primary path, paying
+five times more for it buys nothing this submission needs.
+
+**Tradeoff**: Haiku is materially weaker at the harder of the two jobs. Localising ~100
+checkboxes of ~22 px each is a precision task where a frontier model's advantage is real, so
+the `vlm` engine's numbers will understate what that architecture can do. Annotation -- a
+three-way classification of a small crop -- is well within Haiku's range, which is the job
+that matters, because annotation quality sets the ceiling for the local model.
+
+**Would reconsider if**: The annotation spot-check showed systematically bad labels. That is
+the one failure that must not be accepted on cost grounds: a mislabelled training set produces
+a model that is confidently wrong with no metric revealing it, so `annotate.py` writes a
+contact sheet and a small batch is reviewed by eye before the full run. If Haiku's labels were
+poor there, annotation would move to a stronger model and the `vlm` engine would stay on Haiku
+-- the two choices are independent and only one of them is cost-sensitive.
+
+## 7. The confidence floor is the whole ballgame (measured)
+
+**Decision**: `MinConfidence` defaults to 0.95, and confidence floors are configured **per
+producing engine** rather than shared.
+
+**Why**: This started as a bug hunt, not a design choice. The system was returning 1528 boxes
+on a page holding roughly 120, and the obvious diagnosis -- "the classifier is bad" -- was
+wrong. Breaking the detections down by size showed two clean populations:
+
+| size cluster | count | mean confidence |
+|---|---|---|
+| 10 px | 940 | 0.725 |
+| 12 px | 302 | 0.803 |
+| **52 px** | **57** | **0.971** |
+| **54 px** | **42** | **0.972** |
+
+The true checkboxes are the 52-54 px cluster, and the model is *already* separating them --
+by confidence, cleanly. The default floor of 0.60 simply sat underneath the noise. Sweeping
+it:
+
+| floor | 0.60 | 0.90 | 0.95 | 0.97 | 0.99 |
+|---|---|---|---|---|---|
+| boxes on sample 1 | 1528 | 244 | **125** | 65 | 0 |
+
+125 against a true count near 120, with no change to the model. The cliff at 0.99 is
+explained rather than mysterious: label smoothing of 0.05 during training caps the softmax
+near 0.98, so anything above ~0.97 is off the usable scale.
+
+The per-source part came out of the same investigation. With one shared floor of 0.95, every
+candidate escalated to Claude was discarded on return, because the model reports its own
+certainty around 0.90 even when sure. The assisted engine was paying for model calls that
+*could not change the answer by construction*, and it looked like it was working. Confidences
+from a synthetic-trained softmax and from a language model's self-assessment are not the same
+quantity and must not share a threshold.
+
+**Tradeoff**: A floor this high is tuned against four pages of one document family, and a
+scanned page with weaker contrast would produce lower confidences across the board and lose
+recall silently. It is also a *calibration* fix rather than a *capability* fix -- the
+classifier's real weakness on the domain gap is still there, hidden below the floor rather
+than removed.
+
+**Would reconsider if**: The classifier were retrained on real labelled data. Better
+calibration would move the useful floor back toward the middle of the range, where it is far
+less brittle. A per-page adaptive threshold -- picking the floor from the confidence histogram
+of each page rather than fixing it globally -- is the more robust version of this and is the
+right answer if pages vary more than these four do.
+
+## 8. What Claude Haiku 4.5 could and could not do (measured)
+
+Both Claude paths were run end to end against the real API, and the two results differ sharply
+in a way worth recording rather than smoothing over.
+
+**Adjudication (small crops): works.** This is the assisted engine and the ground-truth
+builder. Judging a 96 px crop as checked / unchecked / not-a-checkbox is well inside Haiku's
+range, and it is the job that matters most, because it is the one that produces training
+labels and corrections.
+
+**Localisation (whole tiles): does not.** The `vlm` engine returns roughly the right *number*
+of boxes in roughly the right *rows*, but the coordinates are systematically offset -- many
+land in empty space (`docs/overlays/_vlm_sample2.png`). This was predicted in decision 6 and
+is confirmed: asking a compact model for precise pixel coordinates of a hundred 22 px objects
+is asking for the thing it is worst at.
+
+The honest conclusion is that the `vlm` engine's numbers measure Haiku, not the architecture.
+Pointing `ANTHROPIC_MODEL` at a frontier model is a one-variable change and is the right move
+if that path ever needs to be good rather than merely demonstrated.

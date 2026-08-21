@@ -61,7 +61,7 @@ func Load() (Config, error) {
 		RequestTimeout:  envDuration("REQUEST_TIMEOUT", 120*time.Second),
 		MaxUploadBytes:  int64(envInt("MAX_UPLOAD_BYTES", 25*1024*1024)),
 		AnthropicAPIKey: os.Getenv("ANTHROPIC_API_KEY"),
-		AnthropicModel:  env("ANTHROPIC_MODEL", "claude-sonnet-4-5"),
+		AnthropicModel:  env("ANTHROPIC_MODEL", "claude-haiku-4-5"),
 		VLMTimeout:      envDuration("VLM_TIMEOUT", 180*time.Second),
 		VLMMaxImageDim:  envInt("VLM_MAX_IMAGE_DIM", 1568),
 		CORSOrigins:     splitAndTrim(env("CORS_ORIGINS", "*")),

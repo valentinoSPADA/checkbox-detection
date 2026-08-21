@@ -52,9 +52,9 @@ services:
       # engine needs no network -- so a reviewer can clone and run with no credentials.
       # Supplying it registers the vlm and assisted engines.
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5}
       DEFAULT_ENGINE: ${DEFAULT_ENGINE:-local}
-      MIN_CONFIDENCE: ${MIN_CONFIDENCE:-0.60}
+      MIN_CONFIDENCE: ${MIN_CONFIDENCE:-0.95}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
     depends_on:

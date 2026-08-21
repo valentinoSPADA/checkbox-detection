@@ -21,8 +21,22 @@ from pydantic import BaseModel, Field
 from engine.classifier import CheckboxClassifier, ModelUnavailableError
 from engine.pipeline import FLOOR, DetectionPipeline
 
+def _log_level(raw: str | None) -> int:
+    """Resolve LOG_LEVEL tolerantly.
+
+    LOG_LEVEL is shared with the Go gateway, whose slog expects lowercase ("info") while
+    Python's logging expects uppercase and raises ValueError on anything else. One variable,
+    two contracts: setting it to `info` in .env crashed this service at import time while the
+    gateway ran fine, which is the worst shape of configuration bug -- it looks like the
+    sidecar is broken rather than like the two services disagreeing.
+    Unknown values fall back to INFO instead of raising: a typo in a log level must never be
+    the reason a service refuses to start.
+    """
+    return getattr(logging, (raw or "INFO").strip().upper(), logging.INFO)
+
+
 logging.basicConfig(
-    level=os.getenv("LOG_LEVEL", "INFO"),
+    level=_log_level(os.getenv("LOG_LEVEL")),
     format='{"ts":"%(asctime)s","level":"%(levelname)s","msg":"%(message)s"}',
 )
 log = logging.getLogger("detector")

@@ -159,7 +159,7 @@ def main() -> int:
     ap.add_argument("--samples", type=Path, default=REPO / "samples")
     ap.add_argument("--per-image", type=int, default=400,
                     help="proposals labelled per sample image")
-    ap.add_argument("--model", default=os.getenv("ANTHROPIC_MODEL", "claude-opus-5"))
+    ap.add_argument("--model", default=os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5"))
     ap.add_argument("--out", type=Path, default=Path("data/annotations.npz"))
     ap.add_argument("--sheet", type=Path, default=Path("data/annotations_preview.png"),
                     help="contact sheet for human spot-checking of the labels")
