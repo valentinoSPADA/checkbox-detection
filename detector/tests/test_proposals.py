@@ -14,6 +14,7 @@ import pytest
 
 from engine.preprocess import binarize, crop_with_context, decode, mark_candidate, to_gray
 from engine.proposals import MAX_SIDE, MIN_SIDE, Proposal, _run_lengths, propose
+from training.annotate import interior_brightness, stratified_sample, verdict_agrees
 
 
 def page(width: int = 300, height: int = 200, shade: int = 255) -> np.ndarray:
@@ -239,3 +240,96 @@ class TestMarkCandidate:
             return xs.max() - xs.min()
 
         assert span(1.5) > span(3.0) > span(6.0)
+
+
+class TestStratifiedSample:
+    """Budget allocation, which is where the first annotation run went wrong.
+
+    Sampling the confident tails as one pool let the low tail -- larger by two orders of
+    magnitude -- swallow the share meant for confident checkboxes, and the labelled set came
+    back with 97 positives out of 1600. These tests pin the three-way split.
+    """
+
+    def _scores(self):
+        # Shaped like a real page: thousands of confident rejects, a thin uncertain band,
+        # a hundred or so confident detections.
+        return np.concatenate([
+            np.full(5000, 0.05),   # low tail
+            np.full(300, 0.5),     # uncertain band
+            np.full(120, 0.95),    # high tail
+        ])
+
+    def test_confident_positives_are_not_swallowed_by_the_low_tail(self):
+        scores = self._scores()
+        idx = stratified_sample(scores, 400, np.random.default_rng(0))
+        picked = scores[idx]
+        assert (picked >= 0.8).sum() >= 100, "the high tail must get its own share"
+        assert (picked <= 0.2).sum() <= 130, "the low tail must not take more than its share"
+
+    def test_spends_the_whole_budget(self):
+        scores = self._scores()
+        idx = stratified_sample(scores, 400, np.random.default_rng(0))
+        assert len(idx) == 400
+        assert len(set(idx.tolist())) == 400, "no crop may be paid for twice"
+
+    def test_short_stratum_hands_its_surplus_back(self):
+        # No confident detections at all: the budget must still be spent, not truncated.
+        scores = np.concatenate([np.full(5000, 0.05), np.full(300, 0.5)])
+        idx = stratified_sample(scores, 400, np.random.default_rng(0))
+        assert len(idx) == 400
+
+    def test_returns_everything_when_the_pool_is_smaller_than_the_budget(self):
+        scores = np.full(50, 0.5)
+        idx = stratified_sample(scores, 400, np.random.default_rng(0))
+        assert len(idx) == 50
+
+
+class TestPixelGate:
+    """The measurement that polices the annotator's verdicts.
+
+    Calibration, stated once so the numbers are not mysterious: on the 117 detections of
+    sample 1 confirmed genuine by direct ink measurement, unchecked boxes measure interior
+    brightness 1.000 (all 81) and checked boxes 0.716-0.828 (all 36). Every bound below sits
+    outside that range with margin, and all 117 survive the gate.
+    """
+
+    def _box(self, interior: int, side: int = 40):
+        """A drawn box: black border, `interior` grey inside."""
+        img = np.full((side * 3, side * 3), 255, np.uint8)
+        cv2.rectangle(img, (side, side), (2 * side, 2 * side), 0, 2)
+        img[side + 3:2 * side - 3, side + 3:2 * side - 3] = interior
+        return img
+
+    def test_measures_the_inside_not_the_border(self):
+        # A thickly printed empty box must still read as empty; otherwise the gate would
+        # reject boxes for being well printed.
+        img = self._box(255)
+        assert interior_brightness(img, 40, 40, 40, 40) > 0.95
+
+    def test_a_dark_region_reads_as_void(self):
+        assert interior_brightness(np.zeros((120, 120), np.uint8), 40, 40, 40, 40) < 0.05
+
+    def test_a_degenerate_region_does_not_crash_or_condemn(self):
+        # Zero-area interiors happen at the smallest proposal sizes; defaulting to 1.0 lets
+        # the annotator decide rather than silently auto-rejecting the crop.
+        assert interior_brightness(np.full((10, 10), 255, np.uint8), 0, 0, 2, 2) == 1.0
+
+    def test_not_a_checkbox_is_never_contradicted(self):
+        # The safe class is always allowed through: a wrong negative costs one crop, a wrong
+        # positive teaches the detector that page furniture is a form control.
+        for v in (0.0, 0.5, 1.0):
+            assert verdict_agrees("not_a_checkbox", v)
+
+    def test_unchecked_requires_a_blank_interior(self):
+        assert verdict_agrees("unchecked", 1.0)
+        assert not verdict_agrees("unchecked", 0.05), "a rail interior is not a blank box"
+
+    def test_checked_requires_a_mark_that_neither_fills_nor_vanishes(self):
+        assert verdict_agrees("checked", 0.76)   # measured centre of the real range
+        assert not verdict_agrees("checked", 0.0)    # solid dark: nothing to mark
+        assert not verdict_agrees("checked", 1.0)    # perfectly blank: nothing was marked
+
+    def test_the_confirmed_real_range_passes_end_to_end(self):
+        for v in (0.716, 0.828):
+            assert verdict_agrees("checked", v)
+        assert verdict_agrees("unchecked", 1.000)

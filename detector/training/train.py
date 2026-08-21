@@ -105,6 +105,12 @@ def main() -> None:
     ap.add_argument("--lr", type=float, default=3e-3)
     ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    ap.add_argument("--annotations", type=Path, default=None,
+                    help="npz from training.annotate: real crops labelled by Claude")
+    ap.add_argument("--real-weight", type=int, default=12,
+                    help="times each real crop is repeated in the training set")
+    ap.add_argument("--real-holdout", type=float, default=0.25,
+                    help="fraction of real crops kept out of training, for honest validation")
     args = ap.parse_args()
 
     torch.manual_seed(args.seed)
@@ -114,6 +120,36 @@ def main() -> None:
     xtr, ytr = build_split(args.train, args.seed)
     xva, yva = build_split(args.val, args.seed + 9_999)
     print(f"generated {args.train}+{args.val} crops in {time.time() - t0:.1f}s")
+
+    real_va = None
+    if args.annotations:
+        # Real crops from the four supplied pages, labelled by Claude and filtered against the
+        # pixels (see training/annotate.py). They are the point of this whole exercise: the
+        # synthetic generator can only contain failure modes someone thought of, and the first
+        # model trained purely on it scored 0.9972 on synthetic validation while reporting ten
+        # thousand filled checkboxes per real page.
+        d = np.load(args.annotations)
+        xr, yr = d["crops"].astype(np.float32), d["labels"].astype(np.int64)
+        if xr.ndim == 3:
+            xr = xr[:, None]
+
+        # Split BEFORE oversampling. Repeating first and splitting after would put copies of
+        # the same crop on both sides and turn validation into a memorisation check.
+        rs = np.random.default_rng(args.seed).permutation(len(xr))
+        cut = int(len(xr) * args.real_holdout)
+        hold, keep = rs[:cut], rs[cut:]
+
+        # Oversampled because 1.4k real crops against 80k synthetic would otherwise contribute
+        # almost nothing to the gradient. Repetition rather than a class weight, so that the
+        # augmentation already baked into the synthetic pipeline is not applied to them twice.
+        xr_tr = np.repeat(xr[keep], args.real_weight, axis=0)
+        yr_tr = np.repeat(yr[keep], args.real_weight, axis=0)
+        xtr = np.concatenate([xtr, xr_tr])
+        ytr = np.concatenate([ytr, yr_tr])
+        real_va = DataLoader(TensorDataset(torch.from_numpy(xr[hold]),
+                                           torch.from_numpy(yr[hold])), batch_size=512)
+        print(f"mixed in {len(keep)} real crops x{args.real_weight}, "
+              f"holding out {len(hold)} for real validation")
 
     tr = DataLoader(TensorDataset(torch.from_numpy(xtr), torch.from_numpy(ytr)),
                     batch_size=args.batch, shuffle=True, drop_last=True)
@@ -141,7 +177,13 @@ def main() -> None:
             sched.step()
             run += float(loss.detach())
         acc, cm = evaluate(model, va, device)
-        print(f"epoch {ep}/{args.epochs}  loss={run / len(tr):.4f}  val_acc={acc:.4f}")
+        line = f"epoch {ep}/{args.epochs}  loss={run / len(tr):.4f}  synth_val={acc:.4f}"
+        if real_va is not None:
+            # The number that matters. Synthetic validation saturates near 0.997 whatever the
+            # model has actually learned, so it is reported but not believed.
+            racc, _ = evaluate(model, real_va, device)
+            line += f"  REAL_val={racc:.4f}"
+        print(line)
 
     acc, cm = evaluate(model, va, device)
     print("\nconfusion matrix [true rows x predicted cols]:")
