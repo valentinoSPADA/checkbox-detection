@@ -21,6 +21,7 @@ from pydantic import BaseModel, Field
 from engine.classifier import CheckboxClassifier, ModelUnavailableError
 from engine.pipeline import FLOOR, DetectionPipeline
 
+
 def _log_level(raw: str | None) -> int:
     """Resolve LOG_LEVEL tolerantly.
 

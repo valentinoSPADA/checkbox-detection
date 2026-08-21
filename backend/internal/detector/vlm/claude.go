@@ -77,6 +77,13 @@ type Config struct {
 	TileOverlap float64
 	Concurrency int
 	MaxTokens   int64
+	// BaseURL overrides the Anthropic API endpoint.
+	//
+	// Exists so this adapter can be tested against a stub server. Without it the tiling,
+	// the tile-to-page coordinate mapping and the partial-failure behaviour would all be
+	// unreachable by any test that does not spend money on every run -- which in practice
+	// means untested.
+	BaseURL string
 }
 
 // New builds a Client. Returns an error when no API key is available, so that the wiring
@@ -86,8 +93,12 @@ func New(cfg Config) (*Client, error) {
 	if cfg.APIKey == "" {
 		return nil, errors.New("vlm: ANTHROPIC_API_KEY is required")
 	}
+	opts := []option.RequestOption{option.WithAPIKey(cfg.APIKey)}
+	if cfg.BaseURL != "" {
+		opts = append(opts, option.WithBaseURL(cfg.BaseURL))
+	}
 	c := &Client{
-		api:         anthropic.NewClient(option.WithAPIKey(cfg.APIKey)),
+		api:         anthropic.NewClient(opts...),
 		model:       orString(cfg.Model, "claude-haiku-4-5"),
 		maxImageDim: orInt(cfg.MaxImageDim, 1568),
 		tileRows:    orInt(cfg.TileRows, DefaultTileRows),

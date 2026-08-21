@@ -25,7 +25,10 @@ export default function App() {
   const [busy, setBusy] = useState(false)
   const [engines, setEngines] = useState<EngineName[]>(['local'])
   const [engine, setEngine] = useState<EngineName>('local')
-  const [threshold, setThreshold] = useState(0.6)
+  // Matches the server's calibrated default (domain.DefaultPolicy). Starting lower would
+  // greet the user with the noise floor -- roughly twelve times too many boxes -- and make a
+  // working detector look broken before they have touched anything.
+  const [threshold, setThreshold] = useState(0.95)
   const [zoom, setZoom] = useState(0.35)
   const [dragging, setDragging] = useState(false)
 
