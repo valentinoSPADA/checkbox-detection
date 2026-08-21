@@ -301,3 +301,42 @@ page (0.656 to 0.595) while nearly doubling its precision (0.475 to 0.812).
 **Would reconsider if**: A page-level segmentation step existed (identifying rails, headers and
 body regions before detection), which would make this a routing decision rather than a
 classification one and would generalise better than either approach.
+
+## 11. The escalation budget must scale with uncertainty, not be a constant
+
+**Decision**: `MaxEscalations` raised from 40 to 120, and adjudication chunked into batches of
+20 crops per model call.
+
+**Why**: A reviewer noticed that `assisted` returned nearly the same boxes as `local` and asked
+whether that was intended. It was not, and the cause was arithmetic. The number of candidates
+inside the uncertainty band, measured per sample:
+
+| sample | in band | escalated at cap 40 | coverage |
+|---|---|---|---|
+| 1 — clean URAR | 57 | 40 | 70% |
+| 2 — zoomed crop | 136 | 40 | 29% |
+| 3 — shaded rows | 146 | 40 | 27% |
+| 4 — watermarked | **448** | 40 | **9%** |
+
+A flat cap allocates help in inverse proportion to how much a page needs it. Sample 4 has the
+worst recall of the four and received the least adjudication of the four; with 9% coverage,
+`assisted` matching `local` is not a surprising result, it is the expected one.
+
+Chunking is what makes a higher cap usable at all: adjudication previously sent every
+candidate in one message, and a single request asking for 448 verdicts overruns `max_tokens`
+and returns a truncated, unparseable tool call — losing the whole page's adjudication rather
+than one batch of it.
+
+**Measured effect**: assisted went from +0.7 F1 over local to **+1.9** (0.819 → 0.838), and
+the gain is in recall (0.776 → 0.814) rather than precision, which is the direction that
+matters for the pages that were failing. Recall on sample 4 rose from 0.595 to 0.634.
+
+**Tradeoff**: Three times the model spend per hard page — roughly $0.01 against $0.004 on
+Haiku, still trivial per page but not per million. Precision also dips slightly (0.872 to
+0.863): more second opinions means more chances to be talked into a wrong one.
+
+**Would reconsider if**: Spend mattered more than accuracy, in which case the cap belongs in
+per-tenant configuration rather than in a default. The genuinely better design is a budget
+proportional to the band's population with a hard ceiling, but "how much may this page cost"
+is a policy decision belonging to whoever pays the bill, so it is exposed as
+`MAX_ESCALATIONS` rather than decided here.

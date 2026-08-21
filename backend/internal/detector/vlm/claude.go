@@ -53,6 +53,15 @@ const (
 	// DefaultMaxTokens is generous because a dense tile can legitimately hold 60+ boxes and
 	// a truncated tool call is unparseable -- the whole tile is lost, not just its tail.
 	DefaultMaxTokens = 8000
+	// DefaultBatchSize is how many candidate crops are judged in one adjudication call.
+	//
+	// Sending every candidate in a single message was the previous behaviour and does not
+	// scale: on the watermarked sample 448 candidates land in the uncertainty band, and one
+	// message asking for 448 verdicts overruns max_tokens and returns an unparseable
+	// truncated tool call -- losing the entire page's adjudication rather than a slice of it.
+	// Twenty is small enough that one bad batch costs little and the model numbers regions
+	// reliably, large enough that per-call overhead stays amortised.
+	DefaultBatchSize = 20
 )
 
 // Client calls a Claude vision model and adapts its answers into domain detections.
@@ -65,6 +74,7 @@ type Client struct {
 	tileOverlap float64
 	concurrency int
 	maxTokens   int64
+	batchSize   int
 }
 
 // Config configures a Client. Zero-valued fields fall back to the Default* constants.
@@ -77,6 +87,8 @@ type Config struct {
 	TileOverlap float64
 	Concurrency int
 	MaxTokens   int64
+	// BatchSize is how many candidate crops go into one adjudication call.
+	BatchSize int
 	// BaseURL overrides the Anthropic API endpoint.
 	//
 	// Exists so this adapter can be tested against a stub server. Without it the tiling,
@@ -106,6 +118,7 @@ func New(cfg Config) (*Client, error) {
 		tileOverlap: orFloat(cfg.TileOverlap, DefaultTileOverlap),
 		concurrency: orInt(cfg.Concurrency, DefaultConcurrency),
 		maxTokens:   int64(orInt(int(cfg.MaxTokens), DefaultMaxTokens)),
+		batchSize:   orInt(cfg.BatchSize, DefaultBatchSize),
 	}
 	return c, nil
 }
@@ -344,11 +357,77 @@ func (c *Client) Adjudicate(ctx context.Context, img domain.Image, candidates []
 		return nil, err
 	}
 
+	out := make([]domain.Detection, len(candidates))
+	copy(out, candidates)
+
+	var (
+		mu       sync.Mutex
+		firstErr error
+		failed   int
+		batches  int
+	)
+
+	g, gctx := errgroup.WithContext(ctx)
+	g.SetLimit(c.concurrency)
+	for start := 0; start < len(candidates); start += c.batchSize {
+		start := start
+		end := min(start+c.batchSize, len(candidates))
+		batches++
+		g.Go(func() error {
+			verdicts, err := c.adjudicateBatch(gctx, src, candidates[start:end], contextFactor)
+			mu.Lock()
+			defer mu.Unlock()
+			if err != nil {
+				failed++
+				if firstErr == nil {
+					firstErr = fmt.Errorf("batch %d-%d: %w", start, end, err)
+				}
+				// Swallowed deliberately: a failed batch leaves its candidates with the
+				// local verdict they already had, which is a strictly better outcome than
+				// cancelling the batches that succeeded.
+				return nil
+			}
+			for _, v := range verdicts {
+				idx := start + v.Index
+				if v.Index < 0 || idx >= end {
+					continue
+				}
+				switch v.Verdict {
+				case "not_a_checkbox":
+					// Zeroing the confidence lets the existing policy threshold drop it,
+					// rather than adding a second deletion path that could disagree.
+					out[idx].Confidence = 0
+				case "checked", "unchecked":
+					out[idx].IsChecked = v.Verdict == "checked"
+					out[idx].Confidence = clamp01(v.Confidence, 0.9)
+				default:
+					continue
+				}
+				out[idx].Source = domain.EngineVLM
+			}
+			return nil
+		})
+	}
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+	if failed == batches && firstErr != nil {
+		return nil, firstErr
+	}
+	return out, nil
+}
+
+// adjudicateBatch judges one chunk of candidates in a single model call.
+//
+// Indices in the returned verdicts are local to the chunk; the caller offsets them. Keeping
+// them local matters because the model is markedly more reliable numbering twenty regions
+// from zero than numbering region 387 correctly.
+func (c *Client) adjudicateBatch(ctx context.Context, src image.Image,
+	candidates []domain.Detection, contextFactor float64) ([]verdict, error) {
 	blocks := make([]anthropic.ContentBlockParamUnion, 0, len(candidates)*2+1)
 	blocks = append(blocks, anthropic.NewTextBlock(adjudicatePrompt))
 	for i, cand := range candidates {
-		crop := cropAround(src, cand.Box, contextFactor)
-		encoded, err := imaging.Encode(crop)
+		encoded, err := imaging.Encode(cropAround(src, cand.Box, contextFactor))
 		if err != nil {
 			return nil, err
 		}
@@ -359,32 +438,7 @@ func (c *Client) Adjudicate(ctx context.Context, img domain.Image, candidates []
 				MediaType: anthropic.Base64ImageSourceMediaTypeImagePNG,
 			}))
 	}
-
-	verdicts, err := c.callVerdicts(ctx, blocks)
-	if err != nil {
-		return nil, err
-	}
-
-	out := make([]domain.Detection, len(candidates))
-	copy(out, candidates)
-	for _, v := range verdicts {
-		if v.Index < 0 || v.Index >= len(out) {
-			continue
-		}
-		switch v.Verdict {
-		case "not_a_checkbox":
-			// Zeroing the confidence lets the existing policy threshold drop it, instead
-			// of introducing a second deletion path that could disagree with the first.
-			out[v.Index].Confidence = 0
-		case "checked", "unchecked":
-			out[v.Index].IsChecked = v.Verdict == "checked"
-			out[v.Index].Confidence = clamp01(v.Confidence, 0.9)
-		default:
-			continue
-		}
-		out[v.Index].Source = domain.EngineVLM
-	}
-	return out, nil
+	return c.callVerdicts(ctx, blocks)
 }
 
 type verdict struct {

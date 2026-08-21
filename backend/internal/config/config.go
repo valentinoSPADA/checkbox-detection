@@ -38,6 +38,8 @@ type Config struct {
 	VLMTimeout time.Duration
 	// VLMMaxImageDim downsizes pages before upload; 0 disables resizing.
 	VLMMaxImageDim int
+	// VLMBatchSize is how many candidate crops go into one adjudication call.
+	VLMBatchSize int
 	// Policy holds the detection thresholds.
 	Policy domain.Policy
 	// CORSOrigins lists browser origins allowed to call the API.
@@ -64,6 +66,7 @@ func Load() (Config, error) {
 		AnthropicModel:  env("ANTHROPIC_MODEL", "claude-haiku-4-5"),
 		VLMTimeout:      envDuration("VLM_TIMEOUT", 180*time.Second),
 		VLMMaxImageDim:  envInt("VLM_MAX_IMAGE_DIM", 1568),
+		VLMBatchSize:    envInt("VLM_BATCH_SIZE", 0),
 		CORSOrigins:     splitAndTrim(env("CORS_ORIGINS", "*")),
 		LogLevel:        env("LOG_LEVEL", "info"),
 	}

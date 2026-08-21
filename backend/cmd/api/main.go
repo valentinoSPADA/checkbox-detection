@@ -61,6 +61,7 @@ func run() error {
 			APIKey:      cfg.AnthropicAPIKey,
 			Model:       cfg.AnthropicModel,
 			MaxImageDim: cfg.VLMMaxImageDim,
+			BatchSize:   cfg.VLMBatchSize,
 		})
 		if verr != nil {
 			return verr

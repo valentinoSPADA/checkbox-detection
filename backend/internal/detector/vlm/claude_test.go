@@ -396,3 +396,102 @@ func TestHelperDefaults(t *testing.T) {
 		t.Errorf("clamp01(valid) = %v", got)
 	}
 }
+
+func TestAdjudicateChunksIntoBatches(t *testing.T) {
+	// A single message asking for hundreds of verdicts overruns max_tokens and returns a
+	// truncated, unparseable tool call -- losing the whole page's adjudication instead of one
+	// batch of it. Chunking is what makes a high escalation cap usable at all.
+	var calls atomic.Int32
+	url := fakeAPI(t, func(w http.ResponseWriter, r *http.Request) {
+		calls.Add(1)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(toolUseResponse("report_verdicts", map[string]any{
+			"verdicts": []map[string]any{{"index": 0, "verdict": "checked", "confidence": 0.9}},
+		}))
+	})
+	client, _ := New(Config{APIKey: "sk-test", BaseURL: url, BatchSize: 5, Concurrency: 2})
+
+	in := make([]domain.Detection, 23)
+	for i := range in {
+		in[i] = domain.Detection{Box: domain.NewBox(i*30, 0, i*30+20, 20),
+			Confidence: 0.5, Source: domain.EngineLocal}
+	}
+	out, err := client.Adjudicate(context.Background(), pngImage(t, 800, 100), in, 3.0)
+	if err != nil {
+		t.Fatalf("Adjudicate: %v", err)
+	}
+	if calls.Load() != 5 { // ceil(23/5)
+		t.Fatalf("made %d calls for 23 candidates at batch size 5, want 5", calls.Load())
+	}
+	if len(out) != 23 {
+		t.Fatalf("got %d results, want the input length", len(out))
+	}
+}
+
+func TestAdjudicateOffsetsIndicesPerBatch(t *testing.T) {
+	// Verdict indices are local to their batch. If the offset were dropped, every batch's
+	// verdicts would be applied to the first few candidates -- a bug that still returns a
+	// plausible-looking result.
+	url := fakeAPI(t, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(toolUseResponse("report_verdicts", map[string]any{
+			"verdicts": []map[string]any{{"index": 0, "verdict": "checked", "confidence": 0.9}},
+		}))
+	})
+	client, _ := New(Config{APIKey: "sk-test", BaseURL: url, BatchSize: 2, Concurrency: 1})
+
+	in := make([]domain.Detection, 6)
+	for i := range in {
+		in[i] = domain.Detection{Box: domain.NewBox(i*30, 0, i*30+20, 20),
+			Confidence: 0.5, Source: domain.EngineLocal}
+	}
+	out, err := client.Adjudicate(context.Background(), pngImage(t, 400, 100), in, 3.0)
+	if err != nil {
+		t.Fatalf("Adjudicate: %v", err)
+	}
+	// Index 0 of each batch of 2 => candidates 0, 2 and 4 judged; 1, 3 and 5 untouched.
+	for i, d := range out {
+		wantJudged := i%2 == 0
+		judged := d.Source == domain.EngineVLM
+		if judged != wantJudged {
+			t.Fatalf("candidate %d judged=%v, want %v -- batch offsets are wrong", i, judged, wantJudged)
+		}
+	}
+}
+
+func TestAdjudicateSurvivesPartialBatchFailure(t *testing.T) {
+	var seen atomic.Int32
+	url := fakeAPI(t, func(w http.ResponseWriter, r *http.Request) {
+		if seen.Add(1) == 1 {
+			w.WriteHeader(http.StatusTooManyRequests)
+			_, _ = w.Write([]byte(`{"type":"error","error":{"type":"rate_limit_error","message":"slow"}}`))
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(toolUseResponse("report_verdicts", map[string]any{
+			"verdicts": []map[string]any{{"index": 0, "verdict": "checked", "confidence": 0.9}},
+		}))
+	})
+	client, _ := New(Config{APIKey: "sk-test", BaseURL: url, BatchSize: 2, Concurrency: 1})
+
+	in := make([]domain.Detection, 6)
+	for i := range in {
+		in[i] = domain.Detection{Box: domain.NewBox(i*30, 0, i*30+20, 20),
+			Confidence: 0.5, Source: domain.EngineLocal}
+	}
+	out, err := client.Adjudicate(context.Background(), pngImage(t, 400, 100), in, 3.0)
+	if err != nil {
+		t.Fatalf("one failing batch failed the whole adjudication: %v", err)
+	}
+	// The failed batch leaves its candidates with the verdict they already had, which beats
+	// discarding every batch that succeeded.
+	judged := 0
+	for _, d := range out {
+		if d.Source == domain.EngineVLM {
+			judged++
+		}
+	}
+	if judged == 0 {
+		t.Fatal("no verdicts survived a single batch failure")
+	}
+}

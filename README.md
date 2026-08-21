@@ -146,7 +146,7 @@ Measured against `eval/ground_truth.json`, at IoU ≥ 0.4, by `eval/evaluate.py`
 | 3 — shaded rows | 39 | 0.804 | 0.949 | **0.871** | 0.811 |
 | 4 — watermarked | 131 | 0.812 | 0.595 | 0.687 | 0.987 |
 | **Total (`local`)** | **339** | **0.868** | **0.776** | **0.819** | **0.905** |
-| **Total (`assisted`)** | 339 | **0.872** | **0.785** | **0.826** | **0.906** |
+| **Total (`assisted`)** | 339 | 0.863 | **0.814** | **0.838** | **0.909** |
 
 Reading these honestly:
 
@@ -163,8 +163,19 @@ Reading these honestly:
 - **Classification is stronger than localisation.** Given a box that was found, the
   filled/unfilled call is right 90% of the time overall and 99% on sample 4. Most of the
   remaining loss is in deciding *what is a checkbox*, not *whether it is ticked*.
-- **Escalation helps, modestly.** `assisted` gains 0.7 F1 points overall, and 5.3 on sample 2
-  where it lifts precision to 0.978 — for eight extra model calls per page.
+- **Escalation helps once its budget is large enough to matter.** `assisted` gains 1.9 F1
+  points over `local`, and the gain is in *recall* (0.776 → 0.814) at a small precision cost —
+  which is the right direction, because recall is what a page under a watermark loses. Per
+  sample its F1 is 0.919 / 0.922 / 0.884 / 0.703.
+
+  It was not always so. With the escalation cap at its original flat 40, `assisted` returned
+  almost exactly what `local` did, and the reason was arithmetic rather than modelling: the
+  number of candidates in the uncertainty band is 57, 136, 146 and 448 across the four
+  samples, so a flat cap gave the clean page 70% coverage and the watermarked page — the one
+  with the worst recall — 9%. Raising the cap to 120 and chunking the adjudication into
+  batches of 20 (a single message asking for 448 verdicts overruns `max_tokens` and returns an
+  unparseable truncated tool call) took assisted from +0.7 F1 to +1.9, and its recall on
+  sample 4 from 0.595 to 0.634. Both are `MAX_ESCALATIONS` and `VLM_BATCH_SIZE`.
 
 ### Two caveats that matter more than the numbers
 

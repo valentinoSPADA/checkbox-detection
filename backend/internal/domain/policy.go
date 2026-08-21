@@ -32,6 +32,14 @@ type Policy struct {
 	EscalateAbove float64
 	// MaxEscalations caps how many candidates a single request may escalate, bounding both
 	// latency and spend.
+	//
+	// Measured on the four samples, the number of candidates inside the uncertainty band is
+	// 57, 136, 146 and 448. A flat cap therefore allocates help in inverse proportion to how
+	// much a page needs it: at 40 the clean page got 70% coverage and the watermarked page --
+	// the one with the worst recall -- got 9%, which is why assisted output was nearly
+	// identical to local. The cap is still flat, because per-page adaptive budgeting is a
+	// spend-control policy that belongs to whoever pays the bill, but it is now set where it
+	// covers most pages rather than almost none.
 	MaxEscalations int
 }
 
@@ -61,7 +69,7 @@ func DefaultPolicy() Policy {
 		MaxDetections:  0,
 		EscalateBelow:  0.96,
 		EscalateAbove:  0.80,
-		MaxEscalations: 40,
+		MaxEscalations: 120,
 		SourceMinConfidence: map[EngineName]float64{
 			// Claude's self-reported certainty is not the local model's softmax and must
 			// not be held to the same bar; a verdict it returns at 0.9 is a stronger signal
