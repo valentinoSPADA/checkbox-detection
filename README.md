@@ -139,26 +139,32 @@ worth testing.
 Measured against `eval/ground_truth.json`, at IoU ≥ 0.4, by `eval/evaluate.py` calling the
 **live API** — so what is scored is the system as shipped, policy and thresholds included.
 
-| Sample | | Precision | Recall | F1 | Filled/unfilled accuracy |
+| Sample | GT boxes | Precision | Recall | F1 | Filled/unfilled accuracy |
 |---|---|---|---|---|---|
-| 1 — URAR 1004 | 117 boxes | 0.824 | 0.880 | **0.851** | 0.864 |
-| 2 — zoomed crop | 52 | 0.833 | 0.769 | **0.800** | 0.925 |
-| 3 — shaded rows | 39 | 0.475 | 0.718 | 0.571 | 0.750 |
-| 4 — watermarked | 131 | 0.475 | 0.656 | 0.551 | 0.988 |
-| **Total (`local`)** | **339** | **0.622** | **0.758** | **0.684** | **0.903** |
-| **Total (`assisted`)** | 339 | **0.634** | **0.776** | **0.698** | **0.905** |
+| 1 — URAR 1004 | 117 | 0.915 | 0.915 | **0.915** | 0.869 |
+| 2 — zoomed crop | 52 | 0.932 | 0.788 | **0.854** | 0.927 |
+| 3 — shaded rows | 39 | 0.804 | 0.949 | **0.871** | 0.811 |
+| 4 — watermarked | 131 | 0.812 | 0.595 | 0.687 | 0.987 |
+| **Total (`local`)** | **339** | **0.868** | **0.776** | **0.819** | **0.905** |
+| **Total (`assisted`)** | 339 | **0.872** | **0.785** | **0.826** | **0.906** |
 
 Reading these honestly:
 
-- **The two hardest samples are the two that score worst**, and they are the ones flagged as
-  difficult before any code was written: blue-shaded table rows (sample 3) and a page under a
-  diagonal watermark (sample 4). Precision roughly halves on both. Nothing here is a surprise
-  that the design did not anticipate; it is the anticipated weakness, quantified.
+- **Precision is where the work went.** An earlier build scored 0.622 precision / 0.684 F1.
+  Two changes moved it to 0.868 / 0.819, and neither touched the architecture: calibrating the
+  confidence floor (§7 of `DESIGN.md`) and adding the page's black section rail to the training
+  generator as a negative class (§10). Both were bugs in what the model had been *taught* and
+  *thresholded at*, not in how the system is built.
+- **Sample 4 is the remaining weak point, and it is now a recall problem rather than a
+  precision one.** Its precision rose from 0.475 to 0.812, but recall fell from 0.656 to 0.595:
+  the classifier became more conservative, and under a red watermark it now declines boxes it
+  used to accept. That is a trade the current threshold makes deliberately and the one page
+  where a different operating point would be defensible.
 - **Classification is stronger than localisation.** Given a box that was found, the
-  filled/unfilled call is right 90% of the time overall and 99% on sample 4. Most of the loss
-  is in deciding *what is a checkbox*, not *whether it is ticked*.
-- **Escalation helps, modestly.** `assisted` gains about 1.5 F1 points overall and 6.8 on
-  sample 3, for eight extra model calls per page.
+  filled/unfilled call is right 90% of the time overall and 99% on sample 4. Most of the
+  remaining loss is in deciding *what is a checkbox*, not *whether it is ticked*.
+- **Escalation helps, modestly.** `assisted` gains 0.7 F1 points overall, and 5.3 on sample 2
+  where it lifts precision to 0.978 — for eight extra model calls per page.
 
 ### Two caveats that matter more than the numbers
 

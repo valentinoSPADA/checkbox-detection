@@ -12,7 +12,10 @@ instead of being hoped for. Each of these is generated on purpose:
 * freehand marks -- check marks, scribbles, dots, strokes that spill outside the box --
   alongside the clean printed `X`, because sample 2 contains all of them;
 * letter counters (`o`, `a`, `8`, `D`, `B`) rendered from real system fonts at real small
-  sizes, because those are what every geometric prototype kept mistaking for boxes.
+  sizes, because those are what every geometric prototype kept mistaking for boxes;
+* the inside of the black section rail that runs down the left edge of every sample, set with
+  white vertical lettering -- a region where every pixel is ink, so Stage 1 nominates
+  rectangles by the hundred and a model that has never seen a dark crop accepts them.
 
 Crops are rendered at a random *native* pixel size and only then resized to the model's
 input, so the model learns the same resolution loss it will meet at inference: a 12 px
@@ -286,6 +289,53 @@ class SyntheticGenerator:
                         cv2.FONT_HERSHEY_SIMPLEX, n / 55.0, ink, 1)
         return self._degrade(img)
 
+    def _dark_block_negative(self) -> np.ndarray:
+        """Render a crop taken from inside a solid dark band carrying light lettering.
+
+        Every one of the four samples has a black section rail down the left edge with the
+        section name set vertically in white -- SUBJECT, CONTRACT, NEIGHBORHOOD. Inside a
+        solid block every pixel is ink, so Stage 1 finds long runs everywhere and nominates
+        rectangles by the hundred, and the classifier confidently accepted them because no
+        training crop had ever been mostly dark.
+
+        Fixing this in the generator rather than with a geometric filter is deliberate. The
+        obvious filter -- reject candidates surrounded by too much ink -- separates the rail
+        cleanly on the clean page (0.22 removes 51 of 53 false positives, costing nothing)
+        and destroys the watermarked page (the same 0.22 drops 46% of its true detections),
+        because absolute ink density is a property of the page, not of the object. A
+        page-dependent constant is exactly the kind of tuning that looks fine on four samples
+        and fails on the fifth. Teaching the model what the inside of a black bar looks like
+        has no such coupling.
+        """
+        side = self.rng.randint(self.cfg.min_side, self.cfg.max_side)
+        n = max(INPUT_SIZE // 2, round(side * CONTEXT))
+        dark = float(self.rng.choice([0, 0, 8, 20, 35]))
+        img = np.full((n, n), dark, np.float32)
+
+        # The rail has an edge somewhere in most crops taken from it; a crop wholly inside is
+        # also generated, which is the harder and more common case.
+        if self.rng.random() < 0.45:
+            edge = self.rng.randint(1, n - 1)
+            if self.rng.random() < 0.5:
+                img[:, :edge] = 245.0  # paper to the left of the rail
+            else:
+                img[:, edge:] = 245.0
+
+        light = float(self.rng.choice([255, 250, 235, 215]))
+        if _HAS_PIL and self.fonts:
+            pil = Image.fromarray(img.astype(np.uint8))
+            draw = ImageDraw.Draw(pil)
+            font = ImageFont.truetype(self.rng.choice(self.fonts),
+                                      max(6, int(n * self.rng.uniform(0.45, 0.95))))
+            # The rail text is set vertically, so a crop from it shows one or two letters.
+            draw.text((n * self.rng.uniform(-0.05, 0.4), n * self.rng.uniform(-0.2, 0.35)),
+                      self.rng.choice("SUBJECTCONRAIGHBOD"), fill=int(light), font=font)
+            img = np.asarray(pil).astype(np.float32)
+        else:  # pragma: no cover - no TrueType font installed
+            cv2.putText(img, "S", (int(n * 0.2), int(n * 0.8)), cv2.FONT_HERSHEY_SIMPLEX,
+                        n / 40.0, light, max(1, n // 12))
+        return self._degrade(img)
+
     def _structure_negative(self) -> np.ndarray:
         """Render table junctions, partial boxes and oversized cells -- the other confusers."""
         side = self.rng.randint(self.cfg.min_side, self.cfg.max_side)
@@ -342,10 +392,12 @@ class SyntheticGenerator:
             return self._checkbox(checked=False), LABEL_UNCHECKED
         if r < 0.45:
             return self._checkbox(checked=True), LABEL_CHECKED
-        if r < 0.70:
+        if r < 0.66:
             return self._text_negative(), LABEL_NEGATIVE
-        if r < 0.85:
+        if r < 0.78:
             return self._glyph_negative(), LABEL_NEGATIVE
+        if r < 0.88:
+            return self._dark_block_negative(), LABEL_NEGATIVE
         return self._structure_negative(), LABEL_NEGATIVE
 
     def dataset(self, n: int) -> tuple[np.ndarray, np.ndarray]:

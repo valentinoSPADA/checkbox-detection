@@ -89,3 +89,22 @@ select {
 .overlay-wrap { background: #fff; border-radius: 8px; overflow: hidden; }
 .overlay-svg { display: block; }
 .overlay-svg rect { cursor: crosshair; }
+
+/* The explicit Detect control. Deliberately prominent: it is the only thing in the UI that
+   spends money, so it should never be triggered as a side effect of another choice. */
+.detect {
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 9px 22px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 120ms, opacity 120ms;
+}
+.detect:hover:not(:disabled) { filter: brightness(1.1); }
+.detect:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.hint--warn { color: #e2a03f; }
+.hint--cost { color: var(--muted); font-style: italic; }

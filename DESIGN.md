@@ -207,22 +207,97 @@ less brittle. A per-page adaptive threshold -- picking the floor from the confid
 of each page rather than fixing it globally -- is the more robust version of this and is the
 right answer if pages vary more than these four do.
 
-## 8. What Claude Haiku 4.5 could and could not do (measured)
+## 8. What the vision models could and could not do (measured)
 
-Both Claude paths were run end to end against the real API, and the two results differ sharply
-in a way worth recording rather than smoothing over.
+Both Claude paths were run end to end against the real API, and the result corrected an
+assumption made in decision 6 rather than confirming it.
 
 **Adjudication (small crops): works.** This is the assisted engine and the ground-truth
 builder. Judging a 96 px crop as checked / unchecked / not-a-checkbox is well inside Haiku's
 range, and it is the job that matters most, because it is the one that produces training
 labels and corrections.
 
-**Localisation (whole tiles): does not.** The `vlm` engine returns roughly the right *number*
-of boxes in roughly the right *rows*, but the coordinates are systematically offset -- many
-land in empty space (`docs/overlays/_vlm_sample2.png`). This was predicted in decision 6 and
-is confirmed: asking a compact model for precise pixel coordinates of a hundred 22 px objects
-is asking for the thing it is worst at.
+**Localisation (whole page or tile): does not — and not because the model is small.**
+Decision 6 predicted that Haiku would localise poorly and implied a frontier model would fix
+it. The first half was right; the second was wrong, and the probe that tested it is worth
+recording:
 
-The honest conclusion is that the `vlm` engine's numbers measure Haiku, not the architecture.
-Pointing `ANTHROPIC_MODEL` at a frontier model is a one-variable change and is the right move
-if that path ever needs to be good rather than merely demonstrated.
+A single un-tiled page was sent directly to the Messages API with the same prompt and tool
+schema the adapter uses, so no code of this repository was involved in the result.
+
+| model | boxes returned (≈48 real) | box widths returned | placement |
+|---|---|---|---|
+| Claude Haiku 4.5 | 45 | every one exactly 24 px | systematically offset |
+| Claude Opus 5 | 43 | 19-20 px | systematically offset |
+
+Both find approximately the right *number* of checkboxes and the right *rows*. Neither places
+them accurately, and the constant box width is the tell: the model is not measuring an object,
+it is emitting a plausible size at an approximate position. Overlays for both are in
+`docs/overlays/_probe_*.png`.
+
+**What this actually means for the architecture.** Precise pixel localisation of a hundred
+20 px objects is not a task current vision models do well, at any tier. That is not a reason
+to drop them — it is a reason to use them for the half of the problem they *are* good at.
+Which is exactly the split this system already has: classical geometry localises, because
+geometry is exact and free; the model judges what geometry found, because judgement is what
+it is better at than an ink-density threshold. The `assisted` engine is therefore not a
+compromise between the two engines, it is the only one of the three that asks each component
+for the thing it does well.
+
+**Would reconsider if**: A model exposed a segmentation or grounding head rather than
+free-form coordinates, or the task moved to a handful of large boxes per page instead of a
+hundred small ones -- at which point coordinate estimation stops being the bottleneck.
+
+## 9. Detection is an explicit action, never a side effect
+
+**Decision**: The UI runs detection only when the user presses **Detect**. Choosing a file
+loads it for display; changing the engine marks the on-screen result stale and says so.
+Neither sends a request.
+
+**Why**: Two of the three engines cost money per run. The first version detected on file
+selection *and* on every engine change, so opening one page and comparing two engines spent
+three calls, two of which nobody asked for. Selecting what to run and deciding to run it are
+different decisions, and an interface that fuses them spends the user's budget on their
+behalf. The stale-result banner exists for the same reason: silently relabelling a `local`
+result as `assisted` would corrupt the exact comparison the UI is built to support.
+
+**Tradeoff**: One more click on the free engine, where auto-running was genuinely convenient.
+That is a real cost and it is worth paying, because the failure it prevents is silent and the
+inconvenience it adds is visible.
+
+**Would reconsider if**: The engine were free and local-only, at which point the cost argument
+disappears and immediate feedback wins.
+
+## 10. The black section rail: a recognition problem, not a geometry one
+
+**Decision**: The false positives along each page's black section rail -- the vertical
+SUBJECT / CONTRACT / NEIGHBORHOOD band -- are fixed by adding that region to the synthetic
+generator as a negative class, not by a geometric filter.
+
+**Why**: Inside a solid dark block every pixel is ink, so Stage 1 finds long runs everywhere
+and nominates rectangles by the hundred; the classifier accepted them because no training crop
+had ever been mostly dark. The obvious filter is to reject candidates surrounded by too much
+ink, and it was measured before being rejected:
+
+| surrounding-ink threshold | sample 1 (clean) | sample 4 (watermarked) |
+|---|---|---|
+| < 0.22 | removes 51 of 53 rail false positives, keeps **100%** of body detections | keeps only **54%** of body detections |
+
+The threshold that is free on one page destroys another, because absolute ink density is a
+property of the page rather than of the object. A page-dependent constant is exactly the kind
+of tuning that survives four samples and fails on the fifth. Teaching the model what the
+inside of a black bar looks like has no such coupling.
+
+**Measured effect**: rail false positives on sample 1 fell from 53 to 35, and end-to-end
+precision across all four samples rose from 0.622 to 0.868 (F1 0.684 to 0.819). The rail is
+reduced rather than eliminated, which is the honest result: a generator can only approximate
+the real thing.
+
+**Tradeoff**: Requires retraining rather than a one-line filter, and the fix only holds for
+dark regions resembling the generated ones -- an inverted-video scan would still confuse it.
+It also made the classifier more conservative overall, which cost recall on the watermarked
+page (0.656 to 0.595) while nearly doubling its precision (0.475 to 0.812).
+
+**Would reconsider if**: A page-level segmentation step existed (identifying rails, headers and
+body regions before detection), which would make this a routing decision rather than a
+classification one and would generalise better than either approach.

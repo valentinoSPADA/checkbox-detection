@@ -31,6 +31,8 @@ export default function App() {
   const [threshold, setThreshold] = useState(0.95)
   const [zoom, setZoom] = useState(0.35)
   const [dragging, setDragging] = useState(false)
+  // True when the on-screen result no longer reflects the current engine selection.
+  const [stale, setStale] = useState(false)
 
   // Held in a ref so a new run can cancel the previous one. Without this, switching from the
   // slow vlm engine to the fast local engine can let the stale response land last and
@@ -82,22 +84,31 @@ export default function App() {
     [],
   )
 
-  const onFile = useCallback(
-    (f: File) => {
-      setFile(f)
-      setResult(null)
-      void run(f, engine)
-    },
-    [engine, run],
-  )
+  // Selecting a file loads it for display but does NOT detect, and neither does changing the
+  // engine. Detection is explicit.
+  //
+  // The earlier auto-run was actively harmful: picking a file and then trying two engines
+  // fired three requests, two of which the user never asked for, and on the paid engines each
+  // one costs money. Choosing what to run and choosing to run it are different decisions, and
+  // an interface that conflates them spends the user's budget on their behalf.
+  const onFile = useCallback((f: File) => {
+    setFile(f)
+    setResult(null)
+    setError('')
+  }, [])
 
-  const onEngineChange = useCallback(
-    (next: EngineName) => {
-      setEngine(next)
-      if (file) void run(file, next)
-    },
-    [file, run],
-  )
+  const onEngineChange = useCallback((next: EngineName) => {
+    setEngine(next)
+    // The previous result stays on screen, but it was produced by a different engine and
+    // saying so is better than silently relabelling it.
+    setStale(true)
+  }, [])
+
+  const onDetect = useCallback(() => {
+    if (!file || busy) return
+    setStale(false)
+    void run(file, engine)
+  }, [busy, engine, file, run])
 
   const visible = useMemo(
     () => (result?.boxes ?? []).filter((b) => b.confidence >= threshold),
@@ -156,6 +167,27 @@ export default function App() {
             ))}
           </select>
           <span className="hint">{ENGINE_INFO[engine].hint}</span>
+        </div>
+
+        <div className="row">
+          <button className="detect" onClick={onDetect} disabled={!file || busy}>
+            {busy ? 'Detecting…' : 'Detect'}
+          </button>
+          {!file && <span className="hint">Choose an image first.</span>}
+          {file && stale && result && (
+            <span className="hint hint--warn">
+              Showing the previous result from “{ENGINE_INFO[result.meta.engine].label}”. Press
+              Detect to run “{ENGINE_INFO[engine].label}”.
+            </span>
+          )}
+          {file && !stale && !result && !busy && (
+            <span className="hint">Ready — nothing has been sent to the API yet.</span>
+          )}
+          {engine !== 'local' && (
+            <span className="hint hint--cost">
+              This engine calls Claude and costs money per run.
+            </span>
+          )}
         </div>
 
         <div className="row">
