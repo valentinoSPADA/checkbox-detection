@@ -23,3 +23,8 @@ __pycache__/
 # Local artefacts produced by the eval harness
 eval/out/
 docs/overlays/
+
+# Seeded design-canvas output: a ~2.3 MB build artifact regenerated from the working files
+# in design/ (Main.dc.html, canvas.json, form-crop.jpg), which are the actual source.
+design/*.html
+!design/*.dc.html
