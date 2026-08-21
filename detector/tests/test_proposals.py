@@ -15,6 +15,7 @@ import pytest
 from engine.preprocess import binarize, crop_with_context, decode, mark_candidate, to_gray
 from engine.proposals import MAX_SIDE, MIN_SIDE, Proposal, _run_lengths, propose
 from training.annotate import interior_brightness, stratified_sample, verdict_agrees
+from training.import_labels import LABELS, SAME_BOX_IOU, iou
 
 
 def page(width: int = 300, height: int = 200, shade: int = 255) -> np.ndarray:
@@ -333,3 +334,30 @@ class TestPixelGate:
         for v in (0.716, 0.828):
             assert verdict_agrees("checked", v)
         assert verdict_agrees("unchecked", 1.000)
+
+
+class TestHandLabelMerge:
+    """The rule that decides whose label wins when a person and a model describe one box.
+
+    Getting this wrong is silent: an exact-coordinate match would leave the model's mistake in
+    the training set right beside the human correction of it, so the model would be taught the
+    error precisely where it was caught.
+    """
+
+    def test_a_shifted_box_is_still_the_same_box(self):
+        # The two label sets come from the same proposal pool, but a box can move a pixel or
+        # two between runs. That must not read as a different checkbox.
+        assert iou([100, 100, 152, 152], [101, 101, 153, 153]) > SAME_BOX_IOU
+
+    def test_a_neighbouring_box_is_not_the_same_box(self):
+        # The checkbox one row down, which on these forms is roughly one side away. If this
+        # matched, a single hand label would silently delete its neighbour's label too.
+        assert iou([100, 100, 152, 152], [100, 155, 152, 207]) < SAME_BOX_IOU
+
+    def test_degenerate_boxes_never_match(self):
+        assert iou([10, 10, 10, 10], [10, 10, 10, 10]) == 0.0
+
+    def test_labels_map_to_the_classifier_three_classes(self):
+        # The importer writes indices straight into the training set; a mismatch with the
+        # model's class order would train every label onto the wrong output.
+        assert LABELS == {"not_a_checkbox": 0, "unchecked": 1, "checked": 2}
