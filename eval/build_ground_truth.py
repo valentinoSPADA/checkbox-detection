@@ -127,6 +127,28 @@ def adjudicate(client, model: str, prompt: str, patches: list[np.ndarray]) -> di
     return {}
 
 
+def _union(boxes: list[dict], extra: list[dict], iou_min: float = 0.5) -> list[dict]:
+    """Append boxes from `extra` that nothing in `boxes` already covers.
+
+    Near-duplicates are dropped rather than kept because each entry costs an API call and,
+    worse, two overlapping entries for one checkbox would let a single detection match twice
+    and inflate recall.
+    """
+    out = list(boxes)
+    for e in extra:
+        if all(_iou(e["bbox"], b["bbox"]) < iou_min for b in out):
+            out.append({"bbox": e["bbox"]})
+    return out
+
+
+def _iou(a: list[int], b: list[int]) -> float:
+    ix = max(0, min(a[2], b[2]) - max(a[0], b[0]))
+    iy = max(0, min(a[3], b[3]) - max(a[1], b[1]))
+    inter = ix * iy
+    union = (a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - inter
+    return inter / union if union else 0.0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -137,6 +159,8 @@ def main() -> int:
     ap.add_argument("--samples", type=Path, default=REPO / "samples")
     ap.add_argument("--out", type=Path, default=REPO / "eval" / "ground_truth.json")
     ap.add_argument("--sheet", type=Path, default=REPO / "docs" / "ground_truth_preview.png")
+    ap.add_argument("--union-with", type=Path, default=None,
+                    help="merge the boxes of an existing ground-truth file into the pool")
     args = ap.parse_args()
 
     if not os.getenv("ANTHROPIC_API_KEY"):
@@ -148,6 +172,12 @@ def main() -> int:
     prompt = PROMPT_PATH.read_text(encoding="utf-8")
     samples_out, audit = [], []
 
+    prior: dict[str, list[dict]] = {}
+    if args.union_with:
+        for entry in json.loads(args.union_with.read_text(encoding="utf-8"))["samples"]:
+            prior[entry["image"]] = entry["boxes"]
+        print(f"unioning pool with {sum(len(v) for v in prior.values())} prior boxes")
+
     for image_path in sorted(args.samples.glob("*")):
         if image_path.suffix.lower() not in {".png", ".jpg", ".jpeg"}:
             continue
@@ -157,6 +187,20 @@ def main() -> int:
                                  files={"file": (image_path.name, fh)}, timeout=300)
         resp.raise_for_status()
         boxes = resp.json()["boxes"]
+        if prior:
+            # Union the pool with a previous run's boxes.
+            #
+            # Without this the pool is whatever the CURRENT classifier nominates, and a model
+            # that has grown more decisive quietly redefines the thing it is measured against:
+            # boxes it stopped proposing simply leave the ground truth, so its recall cannot
+            # fall no matter what it lost. Measured here, the retrained model's pool on
+            # sample 1 is 165 candidates against the previous model's 1722 -- large enough
+            # that scoring it against its own pool would be meaningless.
+            #
+            # Unioning does not make the pool classifier-independent, which would need every
+            # Stage 1 proposal labelled and is not affordable. It makes it independent of
+            # *which of the two* models is being scored, which is the comparison at hand.
+            boxes = _union(boxes, prior.get(image_path.name, []))
         gray = cv2.imread(str(image_path), cv2.IMREAD_GRAYSCALE)
         patches = [crop_around(gray, b["bbox"]) for b in boxes]
 
@@ -207,7 +251,9 @@ def _write_sheet(path: Path, audit: list[tuple[np.ndarray, str]]) -> None:
     short = {"checked": "CHK", "unchecked": "UNC", "not_a_checkbox": "neg"}
     cols, size = 20, 56
     rows = min(18, (len(audit) + cols - 1) // cols)
-    sheet = np.full((rows * (size + 13), cols * (size + 3)), 205, np.uint8)
+    # Three channels: the crops carry the red candidate marker, and a grayscale canvas would
+    # both fail to broadcast and, worse, hide the very thing being audited.
+    sheet = np.full((rows * (size + 13), cols * (size + 3), 3), 205, np.uint8)
     step = max(1, len(audit) // (rows * cols))  # spread the sample across the whole run
     for k in range(min(len(audit) // step, rows * cols)):
         patch, verdict = audit[k * step]
@@ -215,7 +261,7 @@ def _write_sheet(path: Path, audit: list[tuple[np.ndarray, str]]) -> None:
         y, x = r * (size + 13), c * (size + 3)
         sheet[y:y + size, x:x + size] = cv2.resize(patch, (size, size))
         cv2.putText(sheet, short.get(verdict, "?"), (x, y + size + 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.32, 0, 1)
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.32, (0, 0, 0), 1)
     path.parent.mkdir(parents=True, exist_ok=True)
     cv2.imwrite(str(path), sheet)
 

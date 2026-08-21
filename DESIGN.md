@@ -73,6 +73,11 @@ samples.
 a training set of meaningful size, and it lets the *known* failure modes catalogued in section 0
 be generated deliberately rather than hoped for.
 
+**Update after measurement**: the gap was real and was closed the way this entry anticipated —
+`training/annotate.py` labelled 1832 real crops with Claude and the mixed model gained +3.9 F1
+over synthetic-only. The tradeoff below stands, narrowed rather than removed: 1832 crops from
+four pages of one form family is not a dataset, it is a patch on one distribution.
+
 **Tradeoff**: Introduces a synthetic-to-real domain gap; the model can only be as good as the
 generator's imagination, and a real-world artefact never simulated will be misread. Hard
 negatives from the real samples narrow but do not close the gap.
@@ -289,7 +294,8 @@ of tuning that survives four samples and fails on the fifth. Teaching the model 
 inside of a black bar looks like has no such coupling.
 
 **Measured effect**: rail false positives on sample 1 fell from 53 to 35, and end-to-end
-precision across all four samples rose from 0.622 to 0.868 (F1 0.684 to 0.819). The rail is
+precision across all four samples rose from 0.622 to 0.868 (F1 0.684 to 0.819; later 0.930 /
+0.801 once the classifier was retrained on real labels). The rail is
 reduced rather than eliminated, which is the honest result: a generator can only approximate
 the real thing.
 

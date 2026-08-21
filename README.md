@@ -141,50 +141,59 @@ Measured against `eval/ground_truth.json`, at IoU ≥ 0.4, by `eval/evaluate.py`
 
 | Sample | GT boxes | Precision | Recall | F1 | Filled/unfilled accuracy |
 |---|---|---|---|---|---|
-| 1 — URAR 1004 | 117 | 0.915 | 0.915 | **0.915** | 0.869 |
-| 2 — zoomed crop | 52 | 0.932 | 0.788 | **0.854** | 0.927 |
-| 3 — shaded rows | 39 | 0.804 | 0.949 | **0.871** | 0.811 |
-| 4 — watermarked | 131 | 0.812 | 0.595 | 0.687 | 0.987 |
-| **Total (`local`)** | **339** | **0.868** | **0.776** | **0.819** | **0.905** |
-| **Total (`assisted`)** | 339 | 0.863 | **0.814** | **0.838** | **0.909** |
+| 1 — URAR 1004 | 130 | 0.930 | 0.823 | **0.873** | 0.935 |
+| 2 — zoomed crop | 89 | 0.936 | 0.494 | 0.647 | 0.977 |
+| 3 — shaded rows | 58 | 0.877 | 0.862 | **0.870** | 0.840 |
+| 4 — watermarked | 123 | 0.964 | 0.650 | 0.777 | 0.963 |
+| **Total (`local`)** | **400** | **0.930** | **0.703** | **0.801** | **0.932** |
+| **Total (`assisted`)** | 400 | **0.939** | **0.725** | **0.818** | **0.938** |
+
+The classifier is trained on synthetic crops **plus 1832 real crops** from these four pages,
+labelled by Claude and filtered against the pixels (`detector/data/`). Against the same
+reference, the previous synthetic-only model scored 0.884 / 0.670 / **0.762** at its own best
+threshold — so the real labels are worth **+3.9 F1, +4.6 precision, +3.3 recall**.
+
+The more useful comparison is stability. Moving the floor from 0.95 to 0.90 cost the
+synthetic-only model 35 points of precision (0.884 → 0.533); the retrained model holds 0.93
+across the whole 0.70–0.90 range. A threshold balanced on a knife edge is not an operating
+point, it is a coincidence.
 
 Reading these honestly:
 
 - **Precision is where the work went.** An earlier build scored 0.622 precision / 0.684 F1.
-  Two changes moved it to 0.868 / 0.819, and neither touched the architecture: calibrating the
-  confidence floor (§7 of `DESIGN.md`) and adding the page's black section rail to the training
-  generator as a negative class (§10). Both were bugs in what the model had been *taught* and
-  *thresholded at*, not in how the system is built.
-- **Sample 4 is the remaining weak point, and it is now a recall problem rather than a
-  precision one.** Its precision rose from 0.475 to 0.812, but recall fell from 0.656 to 0.595:
-  the classifier became more conservative, and under a red watermark it now declines boxes it
-  used to accept. That is a trade the current threshold makes deliberately and the one page
-  where a different operating point would be defensible.
-- **Classification is stronger than localisation, and this table understates it.** Given a
-  box that was found, the filled/unfilled call is right 90% of the time overall and 99% on
-  sample 4. Most of the remaining loss is in deciding *what is a checkbox*, not *whether it
-  is ticked*.
+  Three changes moved it to 0.930 / 0.801, and none touched the architecture: calibrating the
+  confidence floor (§7 of `DESIGN.md`), adding the page's black section rail to the training
+  generator as a negative class (§10), and retraining on real labelled crops instead of purely
+  imagined ones. All three were bugs in what the model had been *taught* and *thresholded at*,
+  not in how the system is built.
+- **Recall is now the weak point, and it is concentrated in sample 2.** 0.494 there against
+  0.823 on sample 1. Sample 2 is a zoomed crop, so its checkboxes are far larger than the rest
+  and sit near the top of the 10–70 px range Stage 1 sweeps. The honest reading is that the
+  size range is tuned for full pages and thins out at the end where this sample lives — a
+  fixable proposal-stage limit rather than anything the classifier decides.
+- **A threshold belongs to a model, not to a problem.** This was learned the expensive way:
+  the retrained model first measured *worse* (F1 0.801 against 0.819) purely because it
+  inherited a floor calibrated for its predecessor. `DefaultPolicy` now carries the sweep and
+  the instruction to redo it after any retrain.
+- **Ground truth is model-generated, and it is measurably imperfect.** It is rebuilt with the
+  candidate marked in the crop (see below), which halved the labels the pixels contradict —
+  from 14.8% to 8.2% on "checked", and 14.7% to 8.8% on "unchecked". The residue is real: some
+  of what still counts as a miss is not one. Every figure in the table is therefore a floor.
 
-  On sample 1 the true figure is 1.000, not the 0.869 above, and the difference is a defect in
-  the **ground truth** rather than in the detector. All 14 disagreements ran one way — the
-  engine said unchecked, the file said checked — and all 14 boxes contain *exactly 0.0% ink
-  inside their own border*, measured directly on the page. Each one sits immediately above or
-  below a box carrying an X. The adjudicator was shown a crop at 3.0x the candidate's size,
-  which on a form this dense contains two or three checkboxes, and it answered about the
-  marked neighbour. The prompt already told it to ignore the edges; that was not enough,
-  because "the centre one" is not decidable when boxes tile the region.
-
-  The fix is to draw the referent instead of describing it: `imaging.Outline` (Go) and
-  `engine.preprocess.mark_candidate` (Python) ring the candidate in red before the crop is
-  sent, and the prompt now names the ring. This is a **runtime** fix as well as a tooling one
-  — the `assisted` engine adjudicates through the same path, so it was inheriting the same
-  confusion on every escalated candidate. The table above is left as measured against the
-  ground truth as it stands; regenerating it costs API credit and is a separate, deliberate
-  run. **Read every filled/unfilled figure here as a floor.**
-- **Escalation helps once its budget is large enough to matter.** `assisted` gains 1.9 F1
-  points over `local`, and the gain is in *recall* (0.776 → 0.814) at a small precision cost —
-  which is the right direction, because recall is what a page under a watermark loses. Per
-  sample its F1 is 0.919 / 0.922 / 0.884 / 0.703.
+  The defect worth reading about, because it was found by looking rather than by a metric: all
+  14 filled/unfilled disagreements on sample 1 ran one way, and all 14 boxes contained
+  *exactly 0.0% ink inside their own border*, each sitting directly above or below a box
+  carrying an X. The adjudicator saw a crop at 3.0× the candidate's size — two or three
+  checkboxes on a form this dense — and answered about the marked neighbour. The prompt
+  already said to ignore the edges; that could not carry it, because "the centre one" is not
+  decidable when boxes tile the region. The fix draws the referent instead of describing it:
+  `imaging.Outline` (Go) and `engine.preprocess.mark_candidate` (Python) ring the candidate in
+  red. This is a **runtime** fix as well as a tooling one — `assisted` adjudicates through the
+  same path and was inheriting the same confusion on every escalated candidate.
+- **Escalation helps once its budget is large enough to matter.** `assisted` gains 1.7 F1
+  points over `local`, and the gain is in *recall* (0.703 → 0.725) at no precision cost —
+  which is the right direction, because recall is what this system is now short of. Per sample
+  its F1 is 0.887 / 0.686 / 0.879 / 0.790.
 
   It was not always so. With the escalation cap at its original flat 40, `assisted` returned
   almost exactly what `local` did, and the reason was arithmetic rather than modelling: the
@@ -239,17 +248,17 @@ preference.
 Stated plainly, because the challenge asks for them and because the honest ones are more
 useful than a flattering summary.
 
-- **The synthetic-to-real gap is still the dominant error source — it is now hidden under a
-  high threshold rather than removed.** The classifier reaches 99.7% on held-out *synthetic*
-  validation, and on real pages it separates true checkboxes cleanly by confidence (0.95–0.98)
-  from the noise (0.72–0.82). That is what makes a 0.95 floor work. But a floor that high is a
-  calibration fix, not a capability fix: it is tuned against four pages of one document
-  family, and a page with weaker contrast would push real detections below it and lose recall
-  silently. `detector/training/annotate.py` addresses the root cause by having Claude label
-  real Stage 1 proposals for retraining — see *What I'd do next*.
-- **Precision roughly halves on shaded and watermarked pages** (samples 3 and 4, ~0.48 against
-  ~0.83 on the clean ones). Adaptive thresholding keeps the *rules* visible on those pages,
-  but the classifier was never trained on what a checkbox looks like through a red wash.
+- **The synthetic-to-real gap is narrowed, not closed.** The classifier now trains on 1832
+  real crops as well as synthetic ones, which is what took precision to 0.930 and made the
+  operating point stable across 0.70–0.90 instead of collapsing 35 points over a 0.05 move.
+  But 1832 crops come from *four pages of one document family*, and held-out real accuracy is
+  0.9651 — the remaining errors are letter counters (`O`, `0`, `p`) read as empty boxes. A
+  different form family would need its own labelling pass.
+- **The labels themselves are ~90% accurate**, audited by hand at 32 crops per positive class.
+  That is weak supervision working as intended, not a clean dataset, and it puts a ceiling on
+  what the model can learn. It is also why every verdict is checked against a pixel
+  measurement before it enters training: the failure mode of a noisy annotator is confident
+  wrongness, and only an independent source catches that.
 - **Stage 1 caps recall.** A checkbox whose border is broken by more than two pixels, or
   which is smaller than 10 px or larger than 70 px, is never nominated and cannot be
   recovered.
@@ -287,8 +296,10 @@ Each tied to a signal in the job description rather than added for its own sake.
   decorative.
 - **A trained model rather than tuned thresholds**, with the training pipeline, the data
   generator and the exported artifact all in the repository and reproducible.
-- **Claude as an annotator** (`detector/training/annotate.py`) — weak supervision to close the
-  synthetic-to-real gap, with the expensive model offline and out of the request path.
+- **Claude as an annotator, run rather than proposed** (`detector/training/annotate.py`) —
+  1832 real crops labelled, gated against a pixel measurement, mixed into training for a
+  measured +3.9 F1. The expensive model is offline and never in the request path; the dataset
+  is committed so the model retrains without an API key.
 - **React + TypeScript overlay viewer** — for a detector, the overlay *is* the demo, and it
   answers the role's opening line about interfaces that let humans act on AI decisions.
 - **Structured JSON logging, `/health` and `/ready` split correctly**, graceful shutdown,
@@ -304,9 +315,13 @@ Each tied to a signal in the job description rather than added for its own sake.
 
 ## What I'd add with more time / in production
 
-- **Close the domain gap with real labels.** Run `annotate.py` over several thousand real
-  proposals, retrain on the mix, and iterate. This is the single highest-value remaining
-  change and everything below is worth less than it.
+- **More real labels, from more document families.** The pass that is done covers four pages
+  of one form family; the residual errors are letter counters, which more labels directly
+  address. This is still the highest-value remaining change.
+- **Widen or adapt the Stage 1 size sweep.** Recall on sample 2 is 0.494 against 0.823 on
+  sample 1, and sample 2 is a zoomed crop whose boxes sit at the top of the 10–70 px range.
+  Estimating page scale first and sweeping around it would cost less than the current fixed
+  range and cover more.
 - **Then replace the two-stage pipeline with a fine-tuned end-to-end detector.** Once real
   labels exist, the Stage 1 recall ceiling stops being worth paying for.
 - **Exploit page-level structure**: checkboxes on one form share a size and align into rows

@@ -129,3 +129,71 @@ beside a marked one is itself marked. The bug was one run away from being baked 
 **Cost of the correction.** The published results table is left as measured; regenerating it
 means re-running the adjudicator against the API, which costs credit. Every filled/unfilled
 figure in the README is therefore a floor, and says so.
+
+## Retraining on real labels: what it cost to find out it worked
+
+Running `training.annotate` for the first time produced 1600 labels that were unusable, and
+the audit is the only reason that was discovered rather than trained on. Of 40 crops labelled
+`unchecked`, roughly 36 contained no checkbox at all. The full diagnosis is in the commit that
+fixed it; the short version is three separate defects, one of them introduced by the previous
+fix in this same log:
+
+| Defect | Evidence | Fix |
+|---|---|---|
+| The prompt asserted a false premise ("EXACTLY ONE BOX IS RINGED") | ~90% of sampled positives wrong | The ring marks a *region*, which may hold nothing |
+| Confident tails sampled as one pool | 97 `checked` out of 1600, on pages holding ~400 real boxes | Three strata sampled independently |
+| Prompting could not close the rest | two revisions: ~90% -> ~45% | Police every verdict with a pixel measurement |
+
+The third is the interesting one. The measurement is interior brightness, and it works because
+a checkbox is a *container*: its inside is paper whether or not anyone ticked it. On the 117
+detections of sample 1 confirmed genuine by direct ink measurement, unchecked boxes read 1.000
+(all 81) and checked read 0.716-0.828 (all 36), against ~0.0 for the interior of the black
+section rail. All 117 survive the gate that this calibrates.
+
+Final label quality: ~90% on a 32-crop audit of each positive class, against ~10% ungated.
+
+### The ground truth had to be rebuilt before the result could be read
+
+The retrained model scored **worse** on the first comparison — F1 0.801 against the previous
+0.819. Rendering the 20 boxes it "missed" on sample 1 explained why: 11 were genuine
+checkboxes scored 0.81-0.947, just under a threshold calibrated for a different model; the
+other 9 were black-rail blobs the old ground truth had recorded as checkboxes and the new
+model now rejects so firmly they fall below 0.05. It was being penalised for being right.
+
+So the ground truth was rebuilt with the marked crops. Pixel-contradicted labels roughly
+halved:
+
+| Ground truth | says checked, zero interior ink | says unchecked, interior heavily inked |
+|---|---|---|
+| v1, unmarked crops | 24/162 (14.8%) | 26/177 (14.7%) |
+| v2, marked crops | 15/183 (8.2%) | 19/217 (8.8%) |
+
+The pool for v2 is the **union** of both models' candidates. Building it from the current
+model's pool alone would have been circular: that pool is 165 candidates on sample 1 against
+the previous model's 1722, so boxes the new model stopped proposing would simply have left the
+ground truth and its recall could not have fallen whatever it lost.
+
+### Result, both models against the same rebuilt reference
+
+| Model | floor | Precision | Recall | F1 |
+|---|---|---|---|---|
+| Synthetic only | 0.95 | 0.884 | 0.670 | 0.762 |
+| Synthetic only | 0.90 | 0.533 | 0.695 | 0.603 |
+| **+ real labels** | **0.90** | **0.930** | **0.703** | **0.801** |
+| + real labels | 0.95 | 0.931 | 0.605 | 0.733 |
+
+**+3.9 F1, +4.6 precision, +3.3 recall.** The second row is the more informative one: the
+synthetic-only model lost 35 points of precision moving its floor by 0.05, so its operating
+point was balanced on a knife edge. The retrained model holds 0.93 across 0.70-0.90. A model
+that is insensitive to its own threshold is worth more than a slightly higher peak, because
+the peak was never going to survive the next page.
+
+### Two things this run establishes for the next one
+
+* **A threshold belongs to a model, not to a problem.** Keeping 0.95 across a retrain cost 10
+  points of F1 and read as a regression. `DefaultPolicy` now carries the sweep and the
+  instruction to redo it.
+* **Synthetic validation cannot referee this.** It read 0.9965 for both models. Real held-out
+  validation reads 0.9651 and moves independently -- epoch 5 fell 5 points on real crops while
+  synthetic barely twitched. `train.py --annotations` now holds out real crops and reports
+  both, splitting before oversampling so copies of one crop cannot land on both sides.

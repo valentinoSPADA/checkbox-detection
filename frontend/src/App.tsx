@@ -34,7 +34,7 @@ export default function App() {
   // Matches the server's calibrated default (domain.DefaultPolicy). Starting lower would
   // greet the user with the noise floor — roughly twelve times too many boxes — and make a
   // working detector look broken before they have touched anything.
-  const [threshold, setThreshold] = useState(0.95)
+  const [threshold, setThreshold] = useState(0.90)
   const [dragging, setDragging] = useState(false)
   // True when the on-screen result no longer reflects the current engine selection.
   const [stale, setStale] = useState(false)

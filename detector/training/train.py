@@ -14,6 +14,7 @@ training environment upgrades to. Training dependencies therefore live in
 from __future__ import annotations
 
 import argparse
+import sys
 import time
 from pathlib import Path
 
@@ -96,7 +97,24 @@ def _consolidate(out: Path) -> None:
     external.unlink()
 
 
+def _force_utf8_stdout() -> None:
+    """Make stdout able to carry non-ASCII, on any platform.
+
+    Not cosmetic. torch's ONNX exporter writes progress lines containing emoji, and a Windows
+    console defaults to cp1252, which cannot encode them -- so the export raises
+    UnicodeEncodeError and eight minutes of training are lost at the last step, with a
+    traceback that points at a print statement rather than at anything to do with the model.
+    Errors are replaced rather than raised: a mangled progress character is not worth failing
+    a training run over.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8", errors="replace")
+
+
 def main() -> None:
+    _force_utf8_stdout()
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--train", type=int, default=80_000, help="synthetic training samples")
     ap.add_argument("--val", type=int, default=10_000, help="synthetic validation samples")
@@ -190,7 +208,17 @@ def main() -> None:
     print(f"{'':>16s}" + "".join(f"{c:>16s}" for c in CLASS_NAMES))
     for i, name in enumerate(CLASS_NAMES):
         print(f"{name:>16s}" + "".join(f"{v:>16d}" for v in cm[i]))
-    print(f"\nfinal val accuracy {acc:.4f}")
+    print(f"\nfinal synthetic val accuracy {acc:.4f}")
+    if real_va is not None:
+        # Reported last and read first. Synthetic validation saturates near 0.997 whatever the
+        # model has actually learned about real pages, so this matrix is the one that says
+        # whether the retraining worked.
+        racc, rcm = evaluate(model, real_va, device)
+        print("\nheld-out REAL crops [true rows x predicted cols]:")
+        print(f"{'':>16s}" + "".join(f"{c:>16s}" for c in CLASS_NAMES))
+        for i, name in enumerate(CLASS_NAMES):
+            print(f"{name:>16s}" + "".join(f"{v:>16d}" for v in rcm[i]))
+        print(f"\nfinal REAL val accuracy {racc:.4f}")
 
     export_onnx(model, args.out)
     print(f"exported {args.out} ({args.out.stat().st_size / 1024:.0f} KB)")

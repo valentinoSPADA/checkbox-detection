@@ -45,30 +45,40 @@ type Policy struct {
 
 // DefaultPolicy returns the tuned defaults used by the service.
 //
-// MinConfidence is 0.95, and that number is measured rather than assumed. Sweeping it on
-// sample 1 (which holds roughly 120 checkboxes):
+// MinConfidence is 0.90, and that number is measured rather than assumed. It is also a
+// property of the trained model rather than of the problem, so it is re-swept whenever the
+// classifier is retrained -- a threshold inherited from a previous model is a silent bug.
 //
-//	0.60 -> 1528 boxes    0.90 -> 244 boxes    0.95 -> 125 boxes    0.97 -> 65 boxes
+// Swept end to end against eval/ground_truth.json, scoring the live API:
 //
-// The reason such a high floor is correct here is that the two populations separate cleanly
-// by confidence, not by geometry: the true checkbox size clusters average 0.95-0.98 model
-// confidence, while the flood of 10-12 px false positives averages 0.72-0.82. An earlier
-// default of 0.60 sat below the noise and returned twelve times too many boxes -- the model
-// was fine, the threshold was not.
+//	0.70 -> P 0.871  R 0.743  F1 0.802
+//	0.80 -> P 0.870  R 0.735  F1 0.797
+//	0.90 -> P 0.930  R 0.703  F1 0.801   <- chosen
+//	0.95 -> P 0.931  R 0.605  F1 0.733
 //
-// Note the ceiling: label smoothing of 0.05 during training caps the softmax near 0.98, so
-// a floor of 0.99 returns nothing at all. Anything above ~0.97 is off the usable scale.
+// 0.70 and 0.90 tie on F1, and 0.90 wins on precision by six points at the same F1, so it is
+// the better point on a flat stretch. The flatness is itself the result worth noting: the
+// previous synthetic-only model swung from 0.884 precision at 0.95 to 0.533 at 0.90, which
+// means its threshold was balanced on a knife edge. This one holds 0.93 across the plateau.
+//
+// The two populations separate by confidence rather than by geometry -- there is no size or
+// shape test that divides them (see docs/prototype-log.md, where four were measured and
+// removed). An early default of 0.60 sat below the noise floor and returned twelve times too
+// many boxes; the model was fine, the threshold was not.
+//
+// Note the ceiling: label smoothing of 0.05 during training caps the softmax near 0.98, so a
+// floor of 0.99 returns nothing at all. Anything above ~0.97 is off the usable scale.
 //
 // The escalation band deliberately spans the region just below the floor, so escalation can
 // recover detections the floor would otherwise drop rather than merely re-confirming ones it
 // already keeps.
 func DefaultPolicy() Policy {
 	return Policy{
-		MinConfidence:  0.95,
+		MinConfidence:  0.90,
 		IoUThreshold:   0.30,
 		MaxDetections:  0,
-		EscalateBelow:  0.96,
-		EscalateAbove:  0.80,
+		EscalateBelow:  0.92,
+		EscalateAbove:  0.70,
 		MaxEscalations: 120,
 		SourceMinConfidence: map[EngineName]float64{
 			// Claude's self-reported certainty is not the local model's softmax and must
