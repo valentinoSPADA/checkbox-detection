@@ -1,0 +1,78 @@
+# Brings up the whole system with one command:
+#
+#   docker compose up --build
+#
+# Three separate containers rather than one, because process separation is part of the design
+# rather than an accident: the Go gateway and the Python engine have different runtimes,
+# different scaling characteristics (the gateway is I/O-bound, the engine CPU-bound), and in
+# production would sit behind different autoscaling rules. Collapsing them into one image
+# "for simplicity" would misrepresent the architecture the writeup describes.
+
+services:
+  detector:
+    build:
+      context: ./detector
+    # Not published to the host. The engine is an internal dependency of the API, and
+    # exposing it would offer an unauthenticated compute endpoint to anything on the host.
+    # Uncomment the ports block below when debugging the engine directly.
+    # ports:
+    #   - "8000:8000"
+    expose:
+      - "8000"
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ORT_THREADS: "1"
+      MAX_UPLOAD_BYTES: "26214400"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - |
+          import urllib.request, sys, json
+          r = json.load(urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4))
+          sys.exit(0 if r.get('model_loaded') else 1)
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  api:
+    build:
+      context: ./backend
+      args:
+        VERSION: ${VERSION:-dev}
+    ports:
+      - "8080:8080"
+    environment:
+      ADDR: ":8080"
+      DETECTOR_URL: "http://detector:8000"
+      # Absent by default. The system is designed to work fully without it -- the local
+      # engine needs no network -- so a reviewer can clone and run with no credentials.
+      # Supplying it registers the vlm and assisted engines.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5}
+      DEFAULT_ENGINE: ${DEFAULT_ENGINE:-local}
+      MIN_CONFIDENCE: ${MIN_CONFIDENCE:-0.60}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+    depends_on:
+      detector:
+        # Waits for the engine's model to load, not merely for its container to start.
+        # Without this the API's first requests fail with 503 during every cold start.
+        condition: service_healthy
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: ./frontend
+      args:
+        # The address the *browser* uses. The compose-internal hostname would not resolve
+        # outside the network, so this must be the published host port.
+        VITE_API_BASE_URL: ${PUBLIC_API_URL:-http://localhost:8080}
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+    restart: unless-stopped

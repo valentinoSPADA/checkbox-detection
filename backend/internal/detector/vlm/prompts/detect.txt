@@ -1,0 +1,22 @@
+This image is a section of a US residential appraisal form (Fannie Mae 1004 family).
+
+Report EVERY checkbox you can see, using the report_checkboxes tool.
+
+A checkbox is a small square outline, roughly 15-60 pixels per side, that a person can mark.
+It is usually adjacent to a short label such as "Urban", "Yes", "No", "Fee Simple".
+
+Report a checkbox whether it is EMPTY or MARKED. Empty checkboxes matter as much as marked
+ones -- do not skip them.
+
+Set is_checked to true when the box contains any mark at all: an X, a check mark, a dot, a
+filled block, a scribble, or a stroke that overflows the border. Set it to false only when the
+interior is genuinely blank.
+
+Do NOT report:
+- table cells or data-entry boxes wide enough to hold a word or a number;
+- the enclosed spaces inside printed letters and digits such as o, a, e, D, B, 8, 0;
+- underlines, ruled lines, or the borders of a section.
+
+Give bounding boxes in pixels of THIS image, measured to the outer edge of the box border,
+with x1 < x2 and y1 < y2. Be precise about position; approximate boxes are worse than none.
+Set confidence below 0.5 when you are unsure whether something is a checkbox at all.

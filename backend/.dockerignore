@@ -1,0 +1,2 @@
+# Nothing here is needed inside the build context beyond Go sources and module files.
+*.md

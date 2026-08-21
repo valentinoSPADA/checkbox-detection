@@ -1,0 +1,196 @@
+"""Tests for Stage 1, the geometric proposal generator.
+
+These tests are written against synthetic pages whose checkbox positions are known exactly,
+because the four supplied samples carry no ground truth. Each case encodes one property the
+proposal stage must hold, and several encode a failure a previous prototype actually had --
+those are the ones worth keeping, since they are the regressions most likely to recur.
+"""
+
+from __future__ import annotations
+
+import cv2
+import numpy as np
+import pytest
+
+from engine.preprocess import binarize, crop_with_context, decode, to_gray
+from engine.proposals import MAX_SIDE, MIN_SIDE, Proposal, _run_lengths, propose
+
+
+def page(width: int = 300, height: int = 200, shade: int = 255) -> np.ndarray:
+    """A blank grayscale page at a given background level."""
+    return np.full((height, width), shade, np.uint8)
+
+
+def draw_box(img: np.ndarray, x: int, y: int, side: int, thickness: int = 2,
+             ink: int = 0) -> None:
+    """Draw a checkbox outline in place."""
+    cv2.rectangle(img, (x, y), (x + side, y + side), ink, thickness)
+
+
+def covers(proposals: list[Proposal], x: int, y: int, side: int, slack: int = 4) -> bool:
+    """Whether any proposal lands on the box at (x, y) with roughly the right size."""
+    return any(
+        abs(p.x - x) <= slack and abs(p.y - y) <= slack
+        and abs(p.w - side) <= slack + 2 and abs(p.h - side) <= slack + 2
+        for p in proposals
+    )
+
+
+class TestRunLengths:
+    def test_counts_rightward_run(self):
+        ink = np.array([[True, True, True, False, True]])
+        assert _run_lengths(ink, axis=1).tolist() == [[3, 2, 1, 0, 1]]
+
+    def test_counts_downward_run(self):
+        ink = np.array([[True], [True], [False], [True]])
+        assert _run_lengths(ink, axis=0).ravel().tolist() == [2, 1, 0, 1]
+
+    def test_all_blank_is_all_zero(self):
+        ink = np.zeros((4, 4), bool)
+        assert _run_lengths(ink, axis=1).sum() == 0
+
+    def test_all_ink_row_counts_down_to_one(self):
+        ink = np.ones((1, 5), bool)
+        assert _run_lengths(ink, axis=1).tolist() == [[5, 4, 3, 2, 1]]
+
+
+class TestPropose:
+    def test_finds_an_isolated_box(self):
+        img = page()
+        draw_box(img, 50, 50, 24)
+        got = propose(binarize(img))
+        assert covers(got, 50, 50, 24), f"missed the box; got {len(got)} proposals"
+
+    @pytest.mark.parametrize("side", [12, 20, 28, 40, 60])
+    def test_is_scale_invariant_across_the_supported_range(self, side):
+        # Sample 2 is a zoomed crop whose boxes are several times the size of sample 1's, so
+        # a single expected size cannot exist and the sweep has to cover the whole band.
+        img = page(400, 300)
+        draw_box(img, 100, 100, side, thickness=max(1, side // 12))
+        got = propose(binarize(img))
+        assert covers(got, 100, 100, side, slack=6), f"missed a {side}px box"
+
+    def test_finds_a_box_touching_a_table_rule(self):
+        # This is the exact case that broke the connected-component prototype: the box and
+        # the rule become one component, so component-based detection loses the box entirely.
+        img = page()
+        draw_box(img, 60, 80, 24)
+        cv2.line(img, (0, 80), (300, 80), 0, 2)   # rule through the top edge
+        cv2.line(img, (60, 0), (60, 200), 0, 2)   # rule through the left edge
+        got = propose(binarize(img))
+        assert covers(got, 60, 80, 24), "a box sharing borders with table rules was lost"
+
+    def test_finds_a_box_on_a_shaded_background(self):
+        # Sample 3 places checkboxes on blue-shaded table rows; under a global threshold the
+        # shading either swallows the rules or floods the row.
+        img = page(shade=205)
+        draw_box(img, 40, 40, 22, ink=20)
+        got = propose(binarize(img))
+        assert covers(got, 40, 40, 22), "a box on a shaded row was lost"
+
+    def test_finds_a_marked_box(self):
+        img = page()
+        draw_box(img, 70, 60, 26)
+        cv2.line(img, (74, 64), (92, 82), 0, 3)   # the X
+        cv2.line(img, (74, 82), (92, 64), 0, 3)
+        got = propose(binarize(img))
+        assert covers(got, 70, 60, 26), "a marked box was lost"
+
+    def test_tolerates_a_border_gap_up_to_the_bridge_width(self):
+        # Scanned rules drop pixels, and a longest-run test is unforgiving of that: without
+        # the morphological bridge, a four-pixel dropout in a thirty-pixel border halves the
+        # run and vetoes the whole box. BRIDGE closes gaps strictly narrower than itself.
+        img = page()
+        draw_box(img, 50, 50, 30, thickness=2)
+        cv2.rectangle(img, (62, 49), (63, 52), 255, -1)  # erase a 2 px slice of the top rule
+        got = propose(binarize(img))
+        assert covers(got, 50, 50, 30, slack=6), "a box with a bridgeable border gap was lost"
+
+    def test_a_gap_wider_than_the_bridge_is_not_silently_recovered(self):
+        # The complement of the case above, kept so the bridge cannot be widened casually:
+        # bridging arbitrarily large gaps would start manufacturing rules out of adjacent
+        # glyphs and flood the classifier with false proposals.
+        img = page()
+        draw_box(img, 50, 50, 30, thickness=2)
+        cv2.rectangle(img, (56, 49), (78, 52), 255, -1)  # erase most of the top rule
+        got = propose(binarize(img))
+        assert not covers(got, 50, 50, 30, slack=2), "a box missing its top rule was proposed"
+
+    def test_finds_every_box_in_a_dense_row(self):
+        img = page(500, 120)
+        xs = [30, 110, 190, 270, 350]
+        for x in xs:
+            draw_box(img, x, 40, 26)
+        got = propose(binarize(img))
+        missed = [x for x in xs if not covers(got, x, 40, 26)]
+        assert not missed, f"missed boxes at x={missed}"
+
+    def test_blank_page_yields_nothing(self):
+        assert propose(binarize(page())) == []
+
+    def test_respects_the_size_band(self):
+        img = page(400, 400)
+        draw_box(img, 20, 20, 6)     # below MIN_SIDE
+        draw_box(img, 150, 150, 200)  # above MAX_SIDE
+        got = propose(binarize(img))
+        for p in got:
+            assert MIN_SIDE <= p.w <= MAX_SIDE, f"proposal outside the band: {p}"
+
+    def test_returns_proposals_unsuppressed(self):
+        # Suppression is deferred until confidences exist so it can keep the best-scoring
+        # box rather than an arbitrary geometric pick; overlapping duplicates here are
+        # expected, not a defect.
+        img = page()
+        draw_box(img, 50, 50, 30, thickness=3)
+        got = propose(binarize(img))
+        assert len(got) > 1, "expected overlapping raw proposals at several scales"
+
+    def test_proposal_bbox_matches_the_challenge_schema(self):
+        p = Proposal(10, 20, 30, 40)
+        assert p.as_bbox() == [10, 20, 40, 60]
+
+
+class TestPreprocess:
+    def test_decode_rejects_non_image_bytes(self):
+        with pytest.raises(ValueError):
+            decode(b"this is definitely not a png")
+
+    def test_decode_roundtrips_png(self):
+        img = page(40, 30)
+        ok, buf = cv2.imencode(".png", img)
+        assert ok
+        got = decode(buf.tobytes())
+        assert got.shape[:2] == (30, 40)
+
+    def test_to_gray_passes_through_single_channel(self):
+        g = page(10, 10)
+        assert to_gray(g) is g
+
+    def test_binarize_marks_dark_pixels_as_ink(self):
+        img = page()
+        cv2.rectangle(img, (40, 40), (80, 80), 0, -1)
+        ink = binarize(img)
+        assert ink.dtype == bool
+        assert ink[60, 60] or ink[41, 41], "a solid dark block produced no ink"
+        assert not ink[5, 5], "blank paper was marked as ink"
+
+    def test_crop_with_context_is_larger_than_the_box(self):
+        img = page(200, 200)
+        draw_box(img, 80, 80, 20)
+        patch = crop_with_context(img, 80, 80, 20, 20, context=1.35, out=40)
+        assert patch.shape == (40, 40)
+        assert patch.dtype == np.float32
+        assert patch.min() >= 0.0 and patch.max() <= 1.0
+
+    def test_crop_at_the_page_margin_replicates_rather_than_pads_black(self):
+        # Zero-padding would give a margin checkbox an artificial dark border, which the
+        # classifier would read as a fifth rule and score as a stronger box than it is.
+        img = page(100, 100)
+        draw_box(img, 4, 4, 18)  # near the corner, so the context window runs off the page
+        patch = crop_with_context(img, 4, 4, 18, 18, context=2.5, out=40)
+        assert patch[0, 0] > 0.5, "page margin was padded with black instead of replicated"
+
+    def test_crop_of_a_degenerate_region_is_safe(self):
+        img = page(50, 50)
+        patch = crop_with_context(img, 49, 49, 1, 1, context=1.0, out=40)
+        assert patch.shape == (40, 40)

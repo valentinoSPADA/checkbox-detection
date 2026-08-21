@@ -1,0 +1,25 @@
+# Build output
+backend/api
+backend/api.exe
+backend/coverage.out
+frontend/dist/
+frontend/coverage/
+detector/htmlcov/
+detector/coverage.xml
+detector/.coverage
+
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.venv/
+
+# Secrets. The API key enables the paid engines; it must never be committed.
+.env
+.env.local
+
+# Local artefacts produced by the eval harness
+eval/out/
+docs/overlays/

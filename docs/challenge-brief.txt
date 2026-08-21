@@ -1,0 +1,83 @@
+Backend Take Home Challenge
+Description - Checkbox
+Detection
+
+Backend Challenge: Checkbox Detection
+
+One of the active areas of development at HomeVision is extracting structured
+information from images. The challenge for you is to develop a system that
+detects and classifies checkboxes in document images.
+
+The Problem
+
+You are asked to design and implement a system that:
+1. Detects the location of all checkboxes (filled and unfilled) within a document
+
+    image.
+2. Classifies each checkbox as either filled or unfilled.
+Perfect accuracy is not expected.
+
+Requirements
+
+Your system must expose an HTTP API with the following endpoint:
+
+   POST /detect
+
+Input: A document image (sent as a file upload).
+Output: A JSON response with the following structure:
+
+   {
+      "boxes": [
+          {
+             "bbox": [x1, y1, x2, y2],
+
+Backend Take Home Challenge Description - Checkbox Detection                       1
+             "is_checked": true
+          },
+          {
+
+             "bbox": [x1, y1, x2, y2],
+             "is_checked": false
+          }
+      ]
+   }
+
+Where bbox contains the pixel coordinates of the top-left and bottom-right
+corners of each detected checkbox.
+
+Sample Images
+
+Here are 4 document images you can use to test your system against. These
+images represent real-world appraisal documents with varying characteristics.
+
+Backend Take Home Challenge Description - Checkbox Detection                   2
+Backend Take Home Challenge Description - Checkbox Detection  3
+Backend Take Home Challenge Description - Checkbox Detection  4
+Backend Take Home Challenge Description - Checkbox Detection  5
+Guidelines
+
+Backend Take Home Challenge Description - Checkbox Detection  6
+    You can use any method and any tools you want.
+
+    Your solution must include instructions on how to build and run it.
+
+    Include a brief writeup explaining your approach, the tradeoffs you made, and
+    any known limitations.
+
+    Feel free to use TODO comments to identify parts of the solution where you
+    would do additional work for production-quality code.
+
+    We value your reasoning and decision-making process as much as the final
+    result. Be prepared to explain why you chose your approach over alternatives.
+
+Submission
+
+When your solution is complete, use the form below to submit a zip of your project
+files (including your writeup). We will review your solution and get back to you to
+schedule a one-hour challenge review meeting. In that meeting, you will walk us
+through your code and approach.
+
+Good luck and have fun!
+
+Backend Take Home Challenge Description - Checkbox Detection                         7
+

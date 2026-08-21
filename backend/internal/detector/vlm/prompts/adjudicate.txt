@@ -1,0 +1,14 @@
+Each image below is a small region cropped from a US residential appraisal form. A checkbox
+detector was UNCERTAIN about each one.
+
+For every region, decide which of these it is:
+  "checked"        -- a checkbox carrying any mark (X, check mark, dot, fill, scribble)
+  "unchecked"      -- a checkbox with a genuinely blank interior
+  "not_a_checkbox" -- anything else: a table cell, a letter or digit, a line junction,
+                      a fragment of text, or empty paper
+
+The region is centred on the candidate; ignore other checkboxes near the edges of the crop.
+A checkbox is a small square a person can mark. A cell containing a number, a word, or an
+abbreviation is NOT a checkbox, however square it looks.
+
+Answer for every region index, using the report_verdicts tool.

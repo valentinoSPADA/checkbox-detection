@@ -1,0 +1,91 @@
+/* Single stylesheet: the UI is one screen, so a component-scoped styling system would be
+   more machinery than the surface justifies. */
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --border: #262b36;
+  --text: #e6e8ee;
+  --muted: #9aa3b2;
+  --checked: #e5484d;
+  --unchecked: #30a46c;
+  --accent: #5b8def;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.app { max-width: 1400px; margin: 0 auto; padding: 24px 20px 64px; }
+
+header h1 { margin: 0 0 4px; font-size: 24px; letter-spacing: -0.02em; }
+.sub { margin: 0 0 20px; color: var(--muted); }
+
+.controls {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.drop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
+  border: 1.5px dashed var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: border-color 120ms, color 120ms;
+  text-align: center;
+  padding: 12px;
+}
+.drop:hover, .drop--active { border-color: var(--accent); color: var(--text); }
+.drop input { display: none; }
+
+.row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.row label { color: var(--muted); white-space: nowrap; }
+.row input[type="range"] { width: 180px; accent-color: var(--accent); }
+
+select {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.hint { color: var(--muted); font-size: 13px; }
+
+.status { margin: 16px 0; color: var(--muted); }
+.status--error { color: var(--checked); }
+
+.stats { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  min-width: 92px;
+}
+.stat__value { display: block; font-size: 19px; font-weight: 600; }
+.stat__label { display: block; color: var(--muted); font-size: 12px; }
+
+.legend { display: flex; gap: 10px; margin-bottom: 10px; }
+.chip { font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); }
+.chip--checked { color: var(--checked); border-color: var(--checked); }
+.chip--unchecked { color: var(--unchecked); border-color: var(--unchecked); }
+.chip--dim { color: var(--muted); }
+
+.viewer { overflow: auto; }
+.overlay-wrap { background: #fff; border-radius: 8px; overflow: hidden; }
+.overlay-svg { display: block; }
+.overlay-svg rect { cursor: crosshair; }

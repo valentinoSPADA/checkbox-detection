@@ -1,0 +1,7 @@
+# Training-only dependencies. Installed by CI for the model job and by developers who
+# want to regenerate models/checkbox_cls.onnx; never installed into the runtime image.
+-r requirements.txt
+torch==2.5.1
+onnx==1.17.0
+onnxscript==0.1.0.dev20250107
+pillow==11.1.0
