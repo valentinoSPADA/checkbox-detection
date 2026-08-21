@@ -31,7 +31,7 @@ curl -X POST -F "file=@samples/sample_1_urar_1004.png" http://localhost:8080/det
 ```
 
 ```json
-{ "boxes": [ { "bbox": [612, 1310, 656, 1354], "is_checked": true }, … ] }
+{ "boxes": [ { "bbox": [1077, 1399, 1129, 1451], "is_checked": false }, … ] }
 ```
 
 To enable the Claude-backed engines, copy `.env.example` to `.env` and set
