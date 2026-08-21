@@ -1,0 +1,422 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <style>
+    /* Token pairs. The light set is lifted from homevision.co's own custom properties
+       (#18181b / #71717a / #334155 / #e4e4e7 / #f8fafc / #4f46e5, hover #1d15ad); the dark
+       set is derived in the same zinc + indigo family rather than invented, so the two
+       themes read as one system rather than two designs. */
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-sunken: #f8fafc;
+      --border: #e4e4e7;
+      --border-strong: #d4d4d8;
+      --text: #18181b;
+      --slate: #334155;
+      --muted: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #1d15ad;
+      --accent-soft: #eef2ff;
+      --checked: #4f46e5;
+      --unchecked: #0d9488;
+      --warn: #b45309;
+      --warn-soft: #fffbeb;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 1px 3px rgba(0, 0, 0, .1);
+      --shadow-lg: 0 4px 6px -1px rgba(0, 0, 0, .07), 0 10px 24px -6px rgba(0, 0, 0, .12);
+      --paper: #ffffff;
+    }
+    [data-theme="dark"] {
+      --bg: #09090b;
+      --surface: #18181b;
+      --surface-sunken: #131316;
+      --border: #27272a;
+      --border-strong: #3f3f46;
+      --text: #fafafa;
+      --slate: #cbd5e1;
+      --muted: #a1a1aa;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --accent-soft: #1e1b4b;
+      --checked: #818cf8;
+      --unchecked: #2dd4bf;
+      --warn: #fbbf24;
+      --warn-soft: #292014;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 1px 3px rgba(0, 0, 0, .5);
+      --shadow-lg: 0 4px 6px -1px rgba(0, 0, 0, .5), 0 10px 24px -6px rgba(0, 0, 0, .6);
+      --paper: #e9e9ec;
+    }
+    body { margin: 0; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-hover); }
+    * { box-sizing: border-box; }
+    button { font: inherit; cursor: pointer; }
+    input[type="range"] { accent-color: var(--accent); }
+  </style>
+</helmet>
+
+<div data-theme="{{theme}}" style="background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.5; min-height: 900px; transition: background 160ms ease, color 160ms ease;">
+
+  <!-- ── Top bar ───────────────────────────────────────────────────────────── -->
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 16px 32px; background: var(--surface); border-bottom: 1px solid var(--border);">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: var(--accent);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+          <path d="M8 12.5l2.5 2.5L16 9"></path>
+        </svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 1px;">
+        <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.02em;">Checkbox Detection</div>
+        <div style="font-size: 12px; color: var(--muted);">Appraisal document extraction</div>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 7px; padding: 5px 11px; border: 1px solid var(--border); border-radius: 999px; font-size: 12px; color: var(--muted); background: var(--surface-sunken);">
+        <span style="width: 6px; height: 6px; border-radius: 999px; background: var(--unchecked);"></span>
+        <span>Engine online</span>
+      </div>
+      <button onClick="{{toggleTheme}}" title="Toggle theme" style="display: flex; align-items: center; gap: 8px; padding: 7px 13px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 13px; font-weight: 500; box-shadow: var(--shadow); transition: border-color 140ms ease;">
+        <sc-if value="{{isDark}}" hint-placeholder-val="{{false}}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+          </svg>
+          <span>Light</span>
+        </sc-if>
+        <sc-if value="{{isLight}}" hint-placeholder-val="{{true}}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"></path>
+          </svg>
+          <span>Dark</span>
+        </sc-if>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Body ──────────────────────────────────────────────────────────────── -->
+  <div style="display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 24px; padding: 24px 32px 40px; align-items: start;">
+
+    <!-- ── Control rail ────────────────────────────────────────────────────── -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 16px;">
+
+        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; padding: 22px 16px; border: 1.5px dashed var(--border-strong); border-radius: 10px; background: var(--surface-sunken); text-align: center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+            <path d="M7 9l5-5 5 5"></path>
+            <path d="M12 4v12"></path>
+          </svg>
+          <div style="font-size: 13px; font-weight: 500; color: var(--text);">sample_2_crop_zoomed.jpeg</div>
+          <div style="font-size: 12px; color: var(--muted);">Drop another page, or click to replace</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted);">Engine</div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; background: var(--surface-sunken); border: 1px solid var(--border); border-radius: 10px;">
+            <sc-for list="{{engines}}" as="e" hint-placeholder-count="3">
+              <button onClick="{{e.pick}}" style="{{e.style}}">{{e.label}}</button>
+            </sc-for>
+          </div>
+          <div style="font-size: 12px; color: var(--muted); line-height: 1.45; min-height: 34px;">{{engineHint}}</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button onClick="{{runDetect}}" style="{{detectStyle}}">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"></path>
+              <path d="M3 12h18"></path>
+            </svg>
+            <span>{{detectLabel}}</span>
+          </button>
+          <sc-if value="{{costly}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; gap: 8px; align-items: flex-start; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; background: var(--warn-soft); font-size: 12px; color: var(--warn); line-height: 1.45;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M12 8v5M12 16.5v.01"></path>
+              </svg>
+              <span>This engine calls Claude and costs money per run.</span>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 9px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted);">Confidence</span>
+          <span style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; font-weight: 600; color: var(--text);">{{thresholdLabel}}</span>
+        </div>
+        <input type="range" min="0.5" max="0.99" step="0.01" value="{{threshold}}" onChange="{{setThreshold}}" style="width: 100%;">
+        <div style="font-size: 12px; color: var(--muted);">Calibrated default. Lower it to see what the model rejected.</div>
+      </div>
+    </div>
+
+    <!-- ── Viewer ──────────────────────────────────────────────────────────── -->
+    <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
+
+      <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px;">
+        <sc-for list="{{stats}}" as="s" hint-placeholder-count="5">
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 14px 16px; display: flex; flex-direction: column; gap: 3px;">
+            <div style="font-size: 24px; font-weight: 700; letter-spacing: -0.03em; color: {{s.tone}}; font-variant-numeric: tabular-nums;">{{s.value}}</div>
+            <div style="font-size: 12px; color: var(--muted);">{{s.label}}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); overflow: hidden;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 18px; border-bottom: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--slate);">
+              <span style="width: 11px; height: 11px; border: 2px solid var(--checked); border-radius: 3px; background: color-mix(in srgb, var(--checked) 18%, transparent);"></span>
+              <span>checked</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--slate);">
+              <span style="width: 11px; height: 11px; border: 2px solid var(--unchecked); border-radius: 3px;"></span>
+              <span>unchecked</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums;">{{viewerCaption}}</div>
+            <button onClick="{{openLightbox}}" style="display: flex; align-items: center; gap: 7px; padding: 6px 11px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 12px; font-weight: 500; box-shadow: var(--shadow);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+              </svg>
+              <span>Expand</span>
+            </button>
+          </div>
+        </div>
+
+        <div onClick="{{openLightbox}}" title="Click to open at full size" style="padding: 20px; background: var(--surface-sunken); display: flex; align-items: center; justify-content: center; min-height: 300px; max-height: 460px; cursor: zoom-in;">
+          <div style="position: relative; display: inline-block; max-width: 100%; border-radius: 6px; overflow: hidden; background: var(--paper); box-shadow: var(--shadow);">
+            <img src="./form-crop.jpg" alt="Appraisal form region" style="display: block; max-width: 100%; max-height: 420px; width: auto; height: auto;">
+            <sc-for list="{{visible}}" as="b" hint-placeholder-count="9">
+              <div title="{{b.tip}}" style="{{b.style}}"></div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); padding: 0 2px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 16v-4M12 8.5v.01"></path>
+        </svg>
+        <span>{{footnote}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Lightbox ──────────────────────────────────────────────────────────── -->
+  <!-- Opened from the preview. The inline preview stays a fixed, predictable size no matter
+       what the page's aspect ratio is; free zoom lives here, where a 2550x4200 scan can be
+       inspected without the surrounding layout reflowing around it. -->
+  <sc-if value="{{lightboxOpen}}" hint-placeholder-val="{{false}}">
+    <div style="position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; background: rgba(9, 9, 11, .88); backdrop-filter: blur(3px);">
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 20px; border-bottom: 1px solid rgba(255, 255, 255, .12); flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 14px; color: #fafafa;">
+          <span style="font-size: 13px; font-weight: 600; letter-spacing: -0.01em;">sample_2_crop_zoomed.jpeg</span>
+          <span style="font-size: 12px; color: #a1a1aa; font-variant-numeric: tabular-nums;">{{viewerCaption}}</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid rgba(255, 255, 255, .16); border-radius: 8px;">
+            <button onClick="{{zoomOut}}" title="Zoom out" style="display: flex; align-items: center; justify-content: center; width: 30px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: #fafafa;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+            </button>
+            <span style="min-width: 52px; text-align: center; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; font-weight: 600; color: #fafafa;">{{zoomLabel}}</span>
+            <button onClick="{{zoomIn}}" title="Zoom in" style="display: flex; align-items: center; justify-content: center; width: 30px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: #fafafa;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            </button>
+          </div>
+          <button onClick="{{zoomFit}}" style="padding: 7px 13px; border: 1px solid rgba(255, 255, 255, .16); border-radius: 8px; background: transparent; color: #fafafa; font-size: 12px; font-weight: 500;">Fit</button>
+          <button onClick="{{closeLightbox}}" title="Close" style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid rgba(255, 255, 255, .16); border-radius: 8px; background: transparent; color: #fafafa;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <div onClick="{{closeLightbox}}" style="flex-grow: 1; overflow: auto; padding: 28px; display: flex; align-items: flex-start; justify-content: center; cursor: zoom-out;">
+        <div onClick="{{stopClose}}" style="position: relative; display: inline-block; width: {{zoom}}%; min-width: 320px; flex-shrink: 0; background: var(--paper); border-radius: 4px; overflow: hidden; cursor: default; box-shadow: 0 24px 60px -12px rgba(0, 0, 0, .7);">
+          <img src="./form-crop.jpg" alt="Appraisal form region" style="display: block; width: 100%; height: auto;">
+          <sc-for list="{{visible}}" as="b" hint-placeholder-count="9">
+            <div title="{{b.tip}}" style="{{b.style}}"></div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: center; gap: 18px; padding: 12px 20px; border-top: 1px solid rgba(255, 255, 255, .12); flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 7px; font-size: 12px; color: #d4d4d8;">
+          <span style="width: 11px; height: 11px; border: 2px solid var(--checked); border-radius: 3px; background: color-mix(in srgb, var(--checked) 20%, transparent);"></span>
+          <span>checked</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 7px; font-size: 12px; color: #d4d4d8;">
+          <span style="width: 11px; height: 11px; border: 2px solid var(--unchecked); border-radius: 3px;"></span>
+          <span>unchecked</span>
+        </div>
+        <span style="font-size: 12px; color: #71717a;">Click the backdrop to close</span>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{
+  "theme":  {"editor": "enum", "options": ["light", "dark"], "default": "light", "section": "Theme"},
+  "accent": {"editor": "color", "default": "#4f46e5", "options": ["#4f46e5", "#0d9488", "#b45309", "#18181b"], "section": "Theme"},
+  "engine": {"editor": "enum", "options": ["local", "vlm", "assisted"], "default": "local", "section": "State"}
+}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // Real detections from the running service on this exact crop, as percentages of the
+    // image box: 16 boxes, 7 marked, one at 0.66 so the confidence slider has something
+    // honest to reveal. Positions are measured, not drawn.
+    this.boxes = [
+      { x: 6.7,  y: 2.9,  w: 2.2, h: 12.9, c: true,  p: 0.99 },
+      { x: 19.4, y: 4.7,  w: 2.3, h: 13.5, c: false, p: 0.99 },
+      { x: 33.1, y: 4.7,  w: 2.2, h: 12.9, c: false, p: 0.98 },
+      { x: 47.9, y: 4.7,  w: 2.3, h: 13.5, c: true,  p: 0.99 },
+      { x: 60.2, y: 4.7,  w: 2.2, h: 12.9, c: false, p: 0.98 },
+      { x: 73.6, y: 4.7,  w: 2.3, h: 13.5, c: false, p: 0.99 },
+      { x: 6.7,  y: 22.4, w: 2.2, h: 12.9, c: false, p: 0.99 },
+      { x: 19.4, y: 22.4, w: 2.3, h: 13.5, c: true,  p: 0.99 },
+      { x: 33.1, y: 22.4, w: 2.2, h: 12.9, c: false, p: 0.97 },
+      { x: 47.9, y: 22.4, w: 2.3, h: 13.5, c: true,  p: 0.99 },
+      { x: 60.2, y: 22.4, w: 2.2, h: 12.9, c: false, p: 0.98 },
+      { x: 73.6, y: 22.4, w: 2.3, h: 13.5, c: false, p: 0.66 },
+      { x: 6.7,  y: 40.0, w: 2.2, h: 12.9, c: false, p: 0.98 },
+      { x: 19.4, y: 40.0, w: 2.3, h: 13.5, c: true,  p: 0.99 },
+      { x: 47.9, y: 40.0, w: 2.3, h: 13.5, c: true,  p: 0.99 },
+      { x: 60.2, y: 40.0, w: 2.2, h: 12.9, c: true,  p: 0.98 }
+    ];
+    this.state = {
+      theme: props.theme ?? 'light',
+      engine: props.engine ?? 'local',
+      threshold: 0.95,
+      zoom: 100,
+      lightbox: false,
+      ran: true,
+    };
+  }
+
+  hints() {
+    return {
+      local:    'Geometric proposals plus the trained CNN. Runs offline, no credentials, no cost.',
+      vlm:      'The page is tiled and read directly by Claude. Slow, paid, needs no training data.',
+      assisted: 'Local pipeline, with only its uncertain candidates escalated to Claude.',
+    };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const accent = this.props.accent ?? '#4f46e5';
+    const dark = s.theme === 'dark';
+    const visible = s.ran ? this.boxes.filter((b) => b.p >= s.threshold) : [];
+    const checked = visible.filter((b) => b.c).length;
+
+    const engineLabels = { local: 'Local', vlm: 'Claude', assisted: 'Assisted' };
+    const engines = Object.keys(engineLabels).map((id) => {
+      const on = s.engine === id;
+      return {
+        id,
+        label: engineLabels[id],
+        pick: () => this.setState({ engine: id }),
+        style: [
+          'padding: 8px 6px', 'border-radius: 7px', 'font-size: 13px',
+          'font-weight: ' + (on ? '600' : '500'),
+          'border: 1px solid ' + (on ? 'transparent' : 'transparent'),
+          'background: ' + (on ? 'var(--surface)' : 'transparent'),
+          'color: ' + (on ? accent : 'var(--muted)'),
+          'box-shadow: ' + (on ? 'var(--shadow)' : 'none'),
+          'transition: background 120ms ease, color 120ms ease',
+        ].join('; '),
+      };
+    });
+
+    // Detection overlay. Stroke colour carries the state; a translucent fill on `checked`
+    // makes the two readable at a glance without relying on hue alone.
+    const boxStyle = (b) => {
+      const colour = b.c ? 'var(--checked)' : 'var(--unchecked)';
+      return [
+        'position: absolute',
+        'left: ' + b.x + '%', 'top: ' + b.y + '%',
+        'width: ' + b.w + '%', 'height: ' + b.h + '%',
+        'border: 2px solid ' + colour,
+        'border-radius: 3px',
+        'background: ' + (b.c ? 'color-mix(in srgb, ' + (dark ? '#818cf8' : '#4f46e5') + ' 16%, transparent)' : 'transparent'),
+        'box-sizing: border-box',
+        'cursor: crosshair',
+      ].join('; ');
+    };
+
+    return {
+      theme: s.theme,
+      isDark: dark,
+      isLight: !dark,
+      toggleTheme: () => this.setState({ theme: dark ? 'light' : 'dark' }),
+
+      engines,
+      engineHint: this.hints()[s.engine],
+      costly: s.engine !== 'local',
+
+      runDetect: () => this.setState({ ran: true }),
+      detectLabel: s.ran ? 'Detect again' : 'Detect',
+      detectStyle: [
+        'display: flex', 'align-items: center', 'justify-content: center', 'gap: 9px',
+        'width: 100%', 'padding: 11px 20px', 'border: 0', 'border-radius: 8px',
+        'background: ' + accent, 'color: #ffffff',
+        'font-size: 14px', 'font-weight: 600', 'letter-spacing: -0.01em',
+        'box-shadow: var(--shadow)', 'transition: filter 120ms ease',
+      ].join('; '),
+
+      threshold: s.threshold,
+      thresholdLabel: '≥ ' + s.threshold.toFixed(2),
+      setThreshold: (e) => this.setState({ threshold: parseFloat(e.target.value) }),
+
+      // Zoom lives only in the lightbox. Keeping it out of the main view is what makes the
+      // inline preview a predictable size across pages whose aspect ratios differ wildly --
+      // a 1586x846 crop and a 2550x4200 scan both land in the same frame.
+      zoom: s.zoom,
+      zoomLabel: s.zoom + '%',
+      lightboxOpen: s.lightbox,
+      openLightbox: () => this.setState({ lightbox: true, zoom: 100 }),
+      closeLightbox: () => this.setState({ lightbox: false }),
+      // The image itself must not close the lightbox the backdrop closes.
+      stopClose: (e) => e.stopPropagation(),
+      zoomIn: () => this.setState({ zoom: Math.min(400, s.zoom + 25) }),
+      zoomOut: () => this.setState({ zoom: Math.max(50, s.zoom - 25) }),
+      zoomFit: () => this.setState({ zoom: 100 }),
+
+      visible: visible.map((b) => ({
+        style: boxStyle(b),
+        tip: (b.c ? 'checked' : 'unchecked') + ' · ' + Math.round(b.p * 100) + '% · ' + s.engine,
+      })),
+
+      stats: [
+        { value: String(visible.length), label: 'Shown', tone: 'var(--text)' },
+        { value: String(checked), label: 'Checked', tone: 'var(--checked)' },
+        { value: String(visible.length - checked), label: 'Unchecked', tone: 'var(--unchecked)' },
+        { value: engineLabels[s.engine], label: 'Engine', tone: 'var(--text)' },
+        { value: s.engine === 'local' ? '3.0s' : '9.0s', label: 'Latency', tone: 'var(--text)' },
+      ],
+
+      viewerCaption: this.boxes.length + ' candidates · ' + visible.length + ' above threshold',
+      footnote: 'Boxes below the confidence threshold are hidden, not dimmed — a rejected box drawn in the colour of a decision the system did not make reads as a false positive.',
+    };
+  }
+}
+</script>
+</body>
+</html>

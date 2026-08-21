@@ -4,6 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Checkbox Detection</title>
+    <meta name="theme-color" content="#4f46e5" />
+    <script>
+      // Resolve the theme before first paint. React sets the same attribute on mount, but
+      // that happens after the browser has already painted, so a dark-system user would see
+      // a white flash on every load. Kept inline and tiny for the same reason: an external
+      // file would be a second round trip during which the flash still happens.
+      (function () {
+        try {
+          var stored = localStorage.getItem('checkbox-detection.theme')
+          var dark =
+            stored === 'dark' ||
+            (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light')
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
