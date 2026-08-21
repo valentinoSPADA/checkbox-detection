@@ -83,7 +83,6 @@ select {
 .chip { font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); }
 .chip--checked { color: var(--checked); border-color: var(--checked); }
 .chip--unchecked { color: var(--unchecked); border-color: var(--unchecked); }
-.chip--dim { color: var(--muted); }
 
 .viewer { overflow: auto; }
 .overlay-wrap { background: #fff; border-radius: 8px; overflow: hidden; }

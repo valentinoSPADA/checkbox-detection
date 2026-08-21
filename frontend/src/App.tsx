@@ -238,14 +238,12 @@ export default function App() {
           <div className="legend">
             <span className="chip chip--checked">checked</span>
             <span className="chip chip--unchecked">unchecked</span>
-            <span className="chip chip--dim">below threshold</span>
           </div>
           <Overlay
             imageUrl={imageUrl}
             width={result.meta.width}
             height={result.meta.height}
-            boxes={result.boxes}
-            highlightThreshold={threshold}
+            boxes={visible}
             zoom={zoom}
           />
         </section>
