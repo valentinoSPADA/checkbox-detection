@@ -191,7 +191,7 @@ jobs:
           path: frontend/coverage
 
       - name: SonarCloud scan
-        uses: SonarSource/sonarqube-scan-action@v6
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         # Duplication is the pillar this job exists for: the same box geometry is expressed
@@ -206,10 +206,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Build API image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: ./backend
           push: false
@@ -218,7 +218,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build detector image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: ./detector
           push: false
@@ -226,7 +226,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build UI image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: ./frontend
           push: false
@@ -238,7 +238,7 @@ jobs:
         # with the Go binary serving an embedded bundle and the sidecar on loopback. It has
         # its own way to break -- an embed that missed the build, an entrypoint with the
         # wrong line endings -- and both of those have happened here.
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: .
           push: false
@@ -319,14 +319,20 @@ jobs:
         # Checked in a step, not in the job's `if`: the secrets context is not available in a
         # job-level condition. Failing here with a sentence is better than failing inside
         # flyctl with an auth error that reads like an outage.
+        #
+        # The secret reaches the shell through `env`, never through `${{ }}` inside `run`.
+        # Interpolation happens before the shell starts, so the value would be baked into the
+        # command line -- visible in the process table and in any trace the step emits.
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
-          if [ -z "${{ secrets.FLY_API_TOKEN }}" ]; then
+          if [ -z "$FLY_API_TOKEN" ]; then
             echo "FLY_API_TOKEN is not configured."
             echo "Create one with 'fly tokens create deploy' and add it to the repository secrets."
             exit 1
           fi
 
-      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # master
 
       - name: Deploy
         # `--wait-timeout` exceeds the health check's grace period, so the job fails on a

@@ -103,18 +103,31 @@ export function Lightbox({
         </div>
       </div>
 
-      {/* Clicking the backdrop closes; the click is stopped on the image itself so that
-          inspecting a box never dismisses the thing being inspected. */}
-      <div className="lightbox__stage" onClick={onClose}>
-        <div onClick={(e) => e.stopPropagation()} style={{ display: 'contents' }}>
-          <Overlay
-            imageUrl={imageUrl}
-            width={width}
-            height={height}
-            boxes={boxes}
-            sizing={{ mode: 'zoom', percent: zoom }}
-          />
-        </div>
+      {/*
+        Clicking the backdrop closes; clicking the page does not, so inspecting a box never
+        dismisses the thing being inspected.
+
+        Decided by comparing target with currentTarget rather than by wrapping the image in a
+        stopPropagation handler. The wrapper was a non-interactive element carrying a click
+        handler and no keyboard equivalent -- which a keyboard user cannot reach and an
+        accessibility linter correctly refuses. This has no such element: the backdrop is
+        marked presentational because it genuinely is, and the keyboard paths to close are the
+        Close button and Escape, both real controls rather than a div with a listener.
+      */}
+      <div
+        className="lightbox__stage"
+        role="presentation"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose()
+        }}
+      >
+        <Overlay
+          imageUrl={imageUrl}
+          width={width}
+          height={height}
+          boxes={boxes}
+          sizing={{ mode: 'zoom', percent: zoom }}
+        />
       </div>
 
       <div className="lightbox__foot">

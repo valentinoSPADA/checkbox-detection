@@ -46,8 +46,27 @@ export function Overlay({ imageUrl, width, height, boxes, sizing, onClick }: Ove
       ? { width: '100%', height: 'auto' as const }
       : { maxHeight: sizing.maxHeight, maxWidth: '100%', width: 'auto' as const, height: 'auto' as const }
 
+  // When the caller makes the preview clickable it becomes a control, and a control has to be
+  // reachable without a mouse. Rather than a div with a click handler -- which no keyboard user
+  // can operate -- it takes button semantics, focus, and Enter/Space. Without `onClick` it stays
+  // a plain image and is given no interactive role it does not have.
+  const interactive = onClick
+    ? {
+        role: 'button' as const,
+        tabIndex: 0,
+        'aria-label': 'Open the page at full size',
+        onClick,
+        onKeyDown: (e: React.KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onClick()
+          }
+        },
+      }
+    : {}
+
   return (
-    <div className="overlay" style={wrapperStyle} onClick={onClick}>
+    <div className="overlay" style={wrapperStyle} {...interactive}>
       <img src={imageUrl} alt={`Document page with ${boxes.length} detected checkboxes`} style={imgStyle} />
       {boxes.map((box, index) => {
         const [x1, y1, x2, y2] = box.bbox
