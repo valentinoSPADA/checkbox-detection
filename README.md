@@ -9,7 +9,7 @@ belongs next to their product.
 Detects and classifies checkboxes in appraisal document images, behind the `POST /detect`
 endpoint the challenge specifies.
 
-**Live: <https://checkbox-detection.fly.dev>**
+**Live: <https://checkbox-detection.fly.dev>** · **Source: <https://github.com/valentinoSPADA/checkbox-detection>**
 
 ```bash
 curl -X POST -F "file=@samples/sample_1_urar_1004.png" https://checkbox-detection.fly.dev/detect
