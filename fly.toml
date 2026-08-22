@@ -1,0 +1,60 @@
+# Fly.io deployment for the checkbox detector.
+#
+# The whole stack is one machine running one container. See the Dockerfile for why the three
+# compose services collapse into it, and what that costs.
+
+app = "checkbox-detection"
+primary_region = "gru"                    # São Paulo: nearest region to Buenos Aires
+
+[build]
+  dockerfile = "Dockerfile"
+
+[build.args]
+  # Overridden by CI with the commit SHA, so a running machine can be tied back to a commit
+  # rather than guessed at from an image tag.
+  VERSION = "dev"
+
+[env]
+  LOG_LEVEL = "info"
+  # The measured operating point. Re-swept after every retrain -- see DefaultPolicy in
+  # backend/internal/domain/policy.go for the sweep and why it belongs to the model.
+  MIN_CONFIDENCE = "0.90"
+  # Same origin, so the browser's request never leaves the machine it loaded the page from
+  # and CORS is not part of the deployment's failure surface.
+  CORS_ORIGINS = "*"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+
+  # Scale to zero. Detection is stateless and idempotent, there is no database to keep warm,
+  # and a reviewer opening the link once a day should not cost a machine running all week.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  # One page at a time per machine. The limit is memory, not CPU: a request peaks at ~290 MB
+  # on top of a ~150 MB resident floor, so two concurrent pages on a 512 MB machine is an OOM
+  # rather than a slowdown. Queueing the second request is slower and correct; killing the
+  # machine is faster and wrong.
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 2
+    soft_limit = 1
+
+  # Readiness, not liveness. /health answers as long as the process is up; /ready answers only
+  # once the ONNX model has actually loaded, which takes a few seconds from cold. Routing to a
+  # machine before then produces a 503 for the first visitor after every scale-from-zero.
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "4s"
+    grace_period = "45s"
+    method = "GET"
+    path = "/ready"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  # 512 MB fits with headroom: measured peak is 290 MB during detection and 146 MB at rest,
+  # after the memory work in commit "Cut detector peak memory 4x". Before that this needed
+  # 2 GB, which is the difference between a free allowance and a bill.
+  memory = "512mb"

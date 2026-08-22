@@ -61,6 +61,41 @@ byte limit alone lets through. The sample pages are 10.7 MP. The browser mirrors
 so an oversized file fails instantly instead of after a long upload — that copy is a courtesy,
 not a boundary.
 
+### Deploying
+
+One container, on Fly.io. The three compose services collapse into it: the Go binary serves
+the built UI from its own filesystem via `go:embed`, and the Python sidecar runs on loopback
+beside it.
+
+```bash
+fly launch --no-deploy      # once, to create the app
+fly deploy
+```
+
+`fly.toml` requests a 512 MB shared-cpu-1x machine that scales to zero. That number is
+measured, not hopeful: detection peaks at **215 MiB inside a 512 MB container** and settles at
+~76 MiB, verified by running the production image under `--memory=512m` with zero OOM kills.
+It would not have fitted before the memory work — the same request used to peak at 620 MiB
+and the process grew to 1.2 GB over four pages.
+
+**Why one container rather than three.** On a small tier the alternative is three machines
+with three cold starts, and an API that answers requests while the sidecar it depends on is
+still asleep — an intermittent 503 that is miserable to diagnose. Collapsing them also puts
+the API-to-sidecar call on loopback without changing a line of code: the `Detector` port still
+speaks HTTP to something that could be anywhere. What it costs is that the two processes scale
+together and share a CPU quota, so a page under detection makes the API less responsive. At
+real volume the compose topology is what to deploy, unchanged.
+
+`deploy/entrypoint.sh` supervises the pair with one rule: **if either process exits, the
+container exits.** That is the opposite of what a supervisor normally does, and deliberate —
+an API left running after its sidecar has crashed reports itself as up while failing every
+request.
+
+CI builds this image on every push, smoke-tests it *under the same 512 MB limit*, and deploys
+from `main`. The memory limit is part of the test rather than a note in a document, because a
+regression that pushes peak memory past it is an OOM kill in production and a green suite
+everywhere else.
+
 ### Running without Docker
 
 ```bash

@@ -16,6 +16,7 @@ import (
 
 	"github.com/vspada/checkbox-detection/backend/internal/config"
 	"github.com/vspada/checkbox-detection/backend/internal/domain"
+	"github.com/vspada/checkbox-detection/backend/internal/webui"
 )
 
 // ReadinessProbe reports whether a downstream dependency is usable.
@@ -80,6 +81,12 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("GET /ready", s.handleReady)
 	mux.HandleFunc("GET /version", s.handleVersion)
 	mux.HandleFunc("GET /engines", s.handleEngines)
+
+	// Catch-all, registered last and matched last: Go's mux prefers the most specific pattern,
+	// so every route above still wins over this one. In a compose run it serves the placeholder
+	// page; in the production image it serves the real bundle, which is what lets that image
+	// run one HTTP server instead of two.
+	mux.Handle("GET /", webui.Handler())
 
 	return recoverMiddleware(s.log)(
 		loggingMiddleware(s.log)(

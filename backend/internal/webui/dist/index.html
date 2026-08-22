@@ -1,0 +1,20 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Checkbox Detection — UI not bundled</title>
+<style>
+  body { font: 15px/1.6 system-ui, sans-serif; max-width: 34rem; margin: 12vh auto; padding: 0 1.5rem;
+         color: #18181b; background: #f8fafc; }
+  code { background: #e4e4e7; border-radius: 4px; padding: 1px 5px; }
+</style>
+<h1>UI not bundled into this binary</h1>
+<p>
+  The API is running and <code>POST /detect</code> works. This placeholder is what
+  <code>go:embed</code> compiles in when the frontend has not been built into
+  <code>internal/webui/dist</code> — which is the normal state for a local <code>go build</code>
+  and for the test suite.
+</p>
+<p>
+  The production image replaces it: the Docker build runs <code>npm run build</code> and copies
+  the bundle here before compiling. For local development, run the Vite dev server instead —
+  it proxies to this API and gives hot reload, which a bundle compiled into a binary cannot.
+</p>

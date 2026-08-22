@@ -1,0 +1,24 @@
+# Line endings.
+#
+# This repository is developed on Windows and its artifacts run on Linux. Without this file
+# git checks scripts out with CRLF, and a shell script whose shebang ends in \r fails with
+# "no such file or directory" -- naming a file that plainly exists. That cost a container
+# start here, and it would have cost a deploy.
+#
+# `* text=auto` normalises to LF in the repository; the entries below force LF in the working
+# tree too, for the files whose interpreter reads the first line literally.
+* text=auto
+
+*.sh          text eol=lf
+Dockerfile    text eol=lf
+*.Dockerfile  text eol=lf
+*.yml         text eol=lf
+*.yaml        text eol=lf
+*.toml        text eol=lf
+
+# Binary, so git never tries to translate anything inside them.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.onnx  binary
+*.npz   binary

@@ -64,14 +64,24 @@ export class ApiError extends Error {
 }
 
 /**
+ * Sentinel for a build whose API lives on the same origin as the page.
+ *
+ * A word rather than the empty string, because an empty variable is what a misconfigured CI
+ * job produces and "posts to itself" must never be something a build falls into by accident.
+ * Same-origin is a real deployment shape here -- the production image serves the bundle from
+ * the Go binary that also answers /detect -- so it needs a way to be *chosen*.
+ */
+const SAME_ORIGIN = 'same-origin'
+
+/**
  * Base URL of the API.
  *
  * Read from the build-time environment with a localhost default, so `npm run dev` works with
- * no configuration while a deployed build points at the real host. An empty string is
- * treated as unset rather than as "same origin", because an accidentally-empty variable in
- * CI would otherwise produce a build that silently posts to itself.
+ * no configuration while a deployed build points at the real host.
  */
-const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) || 'http://localhost:8080'
+const configuredBase = import.meta.env.VITE_API_BASE_URL as string | undefined
+const API_BASE =
+  configuredBase === SAME_ORIGIN ? '' : configuredBase || 'http://localhost:8080'
 
 /** Parse an error body into a message, tolerating a non-JSON response from a proxy. */
 async function errorMessage(response: Response): Promise<string> {

@@ -228,6 +228,41 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Build the deployment image
+        # A different artifact from the three above, not a repackaging of them: one container
+        # with the Go binary serving an embedded bundle and the sidecar on loopback. It has
+        # its own way to break -- an embed that missed the build, an entrypoint with the
+        # wrong line endings -- and both of those have happened here.
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: checkbox-detection:ci
+          build-args: VERSION=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test the deployment image under its production memory limit
+        # Capped at 512 MB deliberately: that is what fly.toml requests, and detection peaks
+        # at ~215 MB inside it. A regression that pushes peak memory past the limit is an OOM
+        # kill in production and a passing test suite everywhere else, so the limit is part of
+        # the test rather than a note in a document.
+        run: |
+          docker run -d --name deploy-smoke -p 8099:8080             --memory=512m --memory-swap=512m checkbox-detection:ci
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8099/ready > /dev/null; then break; fi
+            sleep 2
+          done
+          curl -fsS http://localhost:8099/ready
+          # The UI must be served by the same binary that answers /detect; a 404 here means
+          # the embed picked up the committed placeholder instead of the built bundle.
+          curl -fsS http://localhost:8099/ | grep -qi "<div id=\"root\""             || { echo "the embedded UI is the placeholder, not the built bundle"; exit 1; }
+          curl -fsS -X POST -F "file=@samples/sample_1_urar_1004.png"             "http://localhost:8099/detect" -o deploy.json
+          python3 -c "import json; d=json.load(open('deploy.json'));             assert len(d['boxes']) > 50, d; print('deployment image detected', len(d['boxes']))"
+          test "$(docker inspect -f '{{.State.OOMKilled}}' deploy-smoke)" = "false"             || { echo "the container was OOM-killed at its production memory limit"; exit 1; }
+          docker rm -f deploy-smoke
+
       - name: Smoke test the composed stack
         # Proves the pieces actually talk to each other. A green unit-test suite plus three
         # images that build says nothing about whether the API can reach the sidecar, and
@@ -245,3 +280,39 @@ jobs:
             assert isinstance(d['boxes'], list), d; \
             print('detected', len(d['boxes']), 'checkboxes')"
           docker compose down -v
+
+  deploy:
+    name: Deploy to Fly.io
+    runs-on: ubuntu-latest
+    needs: [images, quality]
+    # Only from main, and only when a token exists. A fork's pull request has no access to
+    # secrets, and a deploy step that fails for that reason would make every external
+    # contribution look broken.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    environment:
+      name: production
+      url: https://checkbox-detection.fly.dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy
+        # `--wait-timeout` exceeds the health check's grace period, so the job fails on a
+        # machine that never becomes ready rather than reporting success and leaving the old
+        # one serving. Fly keeps the previous machine until the new one passes, so a failed
+        # deploy is a no-op rather than an outage.
+        run: flyctl deploy --remote-only --wait-timeout 300 --build-arg VERSION=${{ github.sha }}
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Verify the deployed instance answers
+        # The health check proves the process is up. This proves it can still detect: a model
+        # artifact missing from the image passes readiness and fails every request.
+        run: |
+          curl -fsS --retry 5 --retry-delay 5 https://checkbox-detection.fly.dev/ready
+          curl -fsS -X POST -F "file=@samples/sample_1_urar_1004.png"             https://checkbox-detection.fly.dev/detect -o live.json
+          python3 -c "import json; d=json.load(open('live.json'));             assert len(d['boxes']) > 50, d; print('live instance detected', len(d['boxes']))"

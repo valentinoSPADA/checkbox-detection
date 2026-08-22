@@ -1,0 +1,17 @@
+# Keep the build context to what the image actually needs. Without this, Docker uploads the
+# git history, both node_modules trees and the labelled dataset on every build.
+.git
+**/node_modules
+**/__pycache__
+**/.pytest_cache
+**/dist
+**/.venv
+detector/data
+detector/training
+design
+docs
+eval
+samples
+*.md
+.env
+.env.*
