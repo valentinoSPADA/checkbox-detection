@@ -360,3 +360,95 @@ describe('attribution', () => {
     expect(line!.textContent!.replace(/\s+/g, ' ').trim()).toBe('Take-home challenge for')
   })
 })
+
+describe('layout', () => {
+  it('centres the rail until there is something to show beside it', async () => {
+    const fetchMock = stubFetch()
+    render(<App />)
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+
+    expect(document.querySelector('main')!.className).toContain('layout--empty')
+  })
+
+  it('opens the viewer column as the run starts, not when it finishes', async () => {
+    // The distinction matters: waiting for the response would leave the rail centred for the
+    // several seconds a page takes, and then jump at the same moment the result appears.
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).includes('/engines')) {
+        return { ok: true, status: 200, json: async () => ({ engines: ['local'], default: 'local' }) } as Response
+      }
+      return new Promise<Response>(() => {})
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    render(<App />)
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+
+    pickFile()
+    fireEvent.click(screen.getByRole('button', { name: /^detect$/i }))
+
+    await waitFor(() =>
+      expect(document.querySelector('main')!.className).not.toContain('layout--empty'),
+    )
+  })
+})
+
+describe('the loading state does not shift the result', () => {
+  /**
+   * The skeleton is only useful if it occupies the geometry the result will. These assert the
+   * structural half of that — jsdom computes no layout, so the pixel half was verified in a
+   * browser: stats, card and preview all measured a 0px shift across the transition.
+   */
+  function hangingFetch() {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).includes('/engines')) {
+        return { ok: true, status: 200, json: async () => ({ engines: ['local'], default: 'local' }) } as Response
+      }
+      return new Promise<Response>(() => {})
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    return fetchMock
+  }
+
+  it('renders the status strip while loading', async () => {
+    hangingFetch()
+    render(<App />)
+    pickFile()
+    fireEvent.click(screen.getByRole('button', { name: /^detect$/i }))
+
+    await waitFor(() => expect(document.querySelector('.viewer__status')).not.toBeNull())
+    // Scoped to the strip: the Detect button also reads "Detecting…" while a run is in
+    // flight, and an unscoped query matches both.
+    const strip = document.querySelector('.viewer__status') as HTMLElement
+    expect(strip.textContent).toContain('Detecting…')
+    expect(strip.querySelector('.progress__fill')).not.toBeNull()
+  })
+
+  it('keeps the same strip once the result lands', async () => {
+    const fetchMock = stubFetch({
+      boxes: [{ bbox: [10, 20, 32, 42], is_checked: true, confidence: 0.98, source: 'local' }],
+      meta: { ...emptyMeta(), width: 400, height: 300, stats: { candidates: 1, returned: 1 } },
+    })
+    render(<App />)
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+    pickFile()
+    fireEvent.click(screen.getByRole('button', { name: /^detect$/i }))
+
+    await waitFor(() => expect(screen.queryByRole('status')).toBeNull())
+    // Same element, now carrying the count instead of the progress estimate.
+    expect(document.querySelector('.viewer__status')).not.toBeNull()
+    expect(screen.getByText(/1 candidates/)).toBeDefined()
+  })
+
+  it('does not let the skeleton own the strip', async () => {
+    // The regression this guards: when the skeleton rendered its own progress bar, removing
+    // it on completion pulled every card ~40px upward.
+    hangingFetch()
+    render(<App />)
+    pickFile()
+    fireEvent.click(screen.getByRole('button', { name: /^detect$/i }))
+
+    const skeleton = await screen.findByRole('status')
+    expect(skeleton.querySelector('.progress')).toBeNull()
+    expect(skeleton.querySelector('.viewer__status')).toBeNull()
+  })
+})

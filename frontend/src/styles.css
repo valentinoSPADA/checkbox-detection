@@ -16,6 +16,10 @@
   --bg: #f8fafc;
   --surface: #ffffff;
   --surface-sunken: #f8fafc;
+  /* Hover surface for secondary buttons. Light theme darkens; dark theme lifts. The pair is
+     defined per theme rather than as one translucent overlay so each stays a flat token the
+     0.3s background transition can interpolate cleanly. */
+  --surface-hover: #f4f4f5;
   --border: #e4e4e7;
   --border-strong: #d4d4d8;
   --text: #18181b;
@@ -40,6 +44,7 @@
   --bg: #09090b;
   --surface: #18181b;
   --surface-sunken: #131316;
+  --surface-hover: #26262b;
   --border: #27272a;
   --border-strong: #3f3f46;
   --text: #fafafa;
@@ -206,6 +211,25 @@ input[type='range'] {
 
 /* ── Layout ──────────────────────────────────────────────────────────────── */
 
+/*
+ * The rail sits centred until there is a result to sit beside.
+ *
+ * On first load the viewer column is empty, and a 340px panel pinned to the left of a wide
+ * blank area reads as a broken layout rather than an empty one. Centring it puts the one
+ * thing the user can act on in front of them, and sliding it aside as the run starts is what
+ * makes the viewer's arrival feel caused rather than abrupt.
+ *
+ * Done with `transform`, not by animating the grid. Interpolating grid-template-columns is in
+ * the spec and Chrome advertises it, but measured here it snapped: 0px to 869px in a single
+ * frame. `transform` composites on the GPU, always interpolates, and cannot reflow anything
+ * around it -- which also means the viewer beneath is laid out at its final size the whole
+ * time, so nothing inside it moves while the rail travels.
+ *
+ * The offset arrives as --rail-offset, already resolved to pixels by lib/useRailOffset. It
+ * cannot be written in CSS: an endpoint containing `min(100vw, ...)` produces the right
+ * position but starts no transition at all -- verified with getAnimations(), which came back
+ * empty for the viewport form and reported a running transform transition for a plain px one.
+ */
 .layout {
   display: grid;
   grid-template-columns: 340px minmax(0, 1fr);
@@ -216,11 +240,27 @@ input[type='range'] {
   margin: 0 auto;
 }
 
-@media (max-width: 1000px) {
-  .layout {
-    grid-template-columns: minmax(0, 1fr);
-    padding: 16px;
-  }
+.layout .rail {
+  /* An explicit identity, not the absence of a transform. Going from translateX(454px) to
+     `none` measured as a single-frame snap here: the two endpoints are different value types
+     and the engine declined to interpolate them. Both sides being translateX() makes it a
+     plain numeric interpolation. */
+  transform: translateX(0);
+  transition: transform 460ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.layout--empty .rail {
+  transform: translateX(var(--rail-offset, 0px));
+}
+
+/* The viewer is empty in this state, but it is still a grid column; fading it keeps a
+   half-painted skeleton from appearing before the rail has finished moving. */
+.layout--empty .viewer {
+  opacity: 0;
+}
+
+.layout .viewer {
+  transition: opacity 260ms ease 160ms;
 }
 
 .rail {
@@ -266,6 +306,13 @@ input[type='range'] {
   align-items: center;
   justify-content: center;
   padding: 22px 16px;
+  /*
+   * Fixed height, because the two states do not have the same number of lines: empty shows
+   * two hints under the icon, chosen shows a filename and one hint. Letting the box size
+   * itself made the whole rail below it jump on every file selection. The value is the taller
+   * of the two states, measured, so neither is cramped.
+   */
+  min-height: 136px;
   border: 1.5px dashed var(--border-strong);
   border-radius: 10px;
   background: var(--surface-sunken);
@@ -305,12 +352,18 @@ input[type='range'] {
   font-size: 13px;
   font-weight: 500;
   box-shadow: var(--shadow);
+  /* 300ms, matching the ease on homevision.co's own buttons. Long enough to read as a
+     deliberate response rather than a repaint, and the same curve on every property so a
+     hover that changes three of them lands as one movement. */
   transition:
-    border-color 140ms ease,
-    filter 140ms ease;
+    border-color 300ms ease,
+    background-color 300ms ease,
+    color 300ms ease,
+    filter 300ms ease;
 }
 .btn:hover:not(:disabled) {
-  border-color: var(--border-strong);
+  border-color: var(--accent);
+  background: var(--surface-hover);
 }
 
 .btn--primary {
@@ -364,7 +417,14 @@ input[type='range'] {
   gap: 12px;
 }
 
+/*
+ * Height pinned rather than derived from content, for the same reason as the status strip:
+ * the skeleton's placeholder lines and the real value/label pair do not measure the same, and
+ * a 15px difference here pushed the whole page card down as the result arrived. Measured from
+ * the rendered result, so nothing is cramped by it.
+ */
 .stat {
+  min-height: 87px;
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -401,7 +461,10 @@ input[type='range'] {
   box-shadow: var(--shadow-lg);
 }
 
+/* Same reason, and the larger difference: the real head contains a button, the skeleton two
+   text lines. */
 .viewer__head {
+  min-height: 63px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -697,15 +760,38 @@ input[type='range'] {
   height: 100%;
   background: var(--accent);
   border-radius: inherit;
-  transition: width 220ms ease-out;
+  transition:
+    width 220ms ease-out,
+    background-color 300ms ease;
 }
 
 .progress__label {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  gap: 16px;
   font-size: 12px;
   color: var(--muted);
+}
+
+/*
+ * The strip both states share. Its height is fixed rather than derived from its contents:
+ * "Detecting…" and a count are different strings, and a strip that resized between them would
+ * reintroduce exactly the shift this element exists to remove.
+ */
+.viewer__status {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  height: 34px;
+}
+
+/* Finished: the same bar, full, in a colour that reads as a rule rather than as progress
+   still being made. Transitioning the colour rather than swapping it lets the completion be
+   seen — the bar fills and settles instead of being replaced. */
+.progress__fill--done {
+  background: var(--border-strong);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -717,7 +803,9 @@ input[type='range'] {
   }
   body,
   .btn,
-  .drop {
+  .drop,
+  .layout .rail,
+  .layout .viewer {
     transition: none;
   }
 }

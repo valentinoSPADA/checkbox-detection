@@ -14,6 +14,7 @@ import { Icon } from './components/Icon'
 import { HomeVisionLogo } from './components/HomeVisionLogo'
 import { ResultSkeleton } from './components/ResultSkeleton'
 import { useDetectProgress } from './lib/useDetectProgress'
+import { useRailOffset } from './lib/useRailOffset'
 
 /** Height of the inline preview frame, in CSS px. See `.preview` in styles.css for why. */
 const PREVIEW_HEIGHT = 420
@@ -52,6 +53,10 @@ export default function App() {
   const [expanded, setExpanded] = useState(false)
 
   const progress = useDetectProgress(busy)
+
+  // Publishes --rail-offset in resolved pixels; see the hook for why CSS cannot do this.
+  const layoutRef = useRef<HTMLElement>(null)
+  useRailOffset(layoutRef)
 
   // Held in a ref so a new run cancels the previous one, and so a stale response can never
   // land after a fresh one and overwrite it.
@@ -183,7 +188,13 @@ export default function App() {
         </div>
       </header>
 
-      <main className="layout">
+      {/*
+        Until a run starts there is nothing in the viewer, so the rail is centred rather than
+        pinned beside an empty column. `busy` and not just `result` is the condition: the
+        layout should open as the run begins, in step with the skeleton appearing, not after
+        the response lands.
+      */}
+      <main ref={layoutRef} className={`layout${!busy && !result ? ' layout--empty' : ''}`}>
         <div className="rail">
           <div className="card card--pad">
             <label
@@ -272,7 +283,33 @@ export default function App() {
         </div>
 
         <div className="viewer">
-          {busy && <ResultSkeleton percent={progress} height={PREVIEW_HEIGHT} />}
+          {/*
+            One status strip, rendered identically whether a run is in flight or finished.
+            It exists in both states so the geometry below it never shifts: when the skeleton
+            owned this strip, the stat cards jumped ~40px upward as the response landed and
+            the placeholders read as unrelated boxes rather than as what was about to appear.
+
+            Filling it rather than merely reserving it also makes the wait resolve instead of
+            vanish — the bar you were watching finishes, and the label turns into the count.
+          */}
+          {(busy || result) && (
+            <div className="viewer__status">
+              <div className="progress__label">
+                <span>{busy ? 'Detecting…' : caption}</span>
+                <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
+                  {busy ? `${Math.round(progress)}%` : formatLatency(result!.meta.elapsed_ms)}
+                </span>
+              </div>
+              <div className="progress">
+                <div
+                  className={`progress__fill${busy ? '' : ' progress__fill--done'}`}
+                  style={{ width: busy ? `${progress}%` : '100%' }}
+                />
+              </div>
+            </div>
+          )}
+
+          {busy && <ResultSkeleton height={PREVIEW_HEIGHT} />}
 
           {!busy && result && (
             <>
@@ -296,13 +333,10 @@ export default function App() {
                       unchecked
                     </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <span className="viewer__meta">{caption}</span>
-                    <button className="btn" onClick={() => setExpanded(true)}>
-                      <Icon name="expand" size={14} />
-                      Expand
-                    </button>
-                  </div>
+                  <button className="btn" onClick={() => setExpanded(true)}>
+                    <Icon name="expand" size={14} />
+                    Expand
+                  </button>
                 </div>
 
                 <div className="preview" title="Click to open at full size">
