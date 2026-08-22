@@ -47,6 +47,30 @@ log = logging.getLogger("detector")
 # not control to bound its own memory.
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(25 * 1024 * 1024)))
 
+# Longest filename kept in a log line. Long enough to identify a page, short enough that one
+# upload cannot push a megabyte through the logging pipeline.
+_LOG_FIELD_MAX = 120
+
+
+def _safe_for_log(value: str | None) -> str:
+    """Make a caller-supplied string safe to interpolate into a log line.
+
+    The log format here is JSON assembled by a format string, so an uploaded filename goes
+    into it verbatim. A name containing a quote or a newline therefore forges log entries --
+    an attacker chooses the filename, and every field after it in the record. Escaping the
+    two characters that can break out, plus stripping the other control codes, removes that.
+
+    Truncated as well, because the length of the field is also attacker-chosen.
+    """
+    if not value:
+        return "-"
+    cleaned = "".join(ch for ch in value if ch.isprintable())
+    cleaned = cleaned.replace("\\", "\\\\").replace('"', '\\"')
+    if len(cleaned) <= _LOG_FIELD_MAX:
+        return cleaned
+    return cleaned[:_LOG_FIELD_MAX] + "…"
+
+
 _state: dict[str, object] = {}
 
 
@@ -160,8 +184,8 @@ async def detect(
 
     log.info(
         "detect filename=%s bytes=%d raw=%d scored=%d kept=%d ms=%.1f",
-        file.filename, len(data), result.raw_proposals, result.scored_proposals,
-        len(result.candidates), elapsed,
+        _safe_for_log(file.filename), len(data), result.raw_proposals,
+        result.scored_proposals, len(result.candidates), elapsed,
     )
     return DetectOut(
         candidates=[CandidateOut(**c.__dict__) for c in result.candidates],

@@ -23,7 +23,10 @@ WORKDIR /app
 # Requirements are copied first so the dependency layer is cached independently of source
 # changes; without this split every edit to engine/ reinstalls OpenCV.
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# --only-binary refuses source distributions, so no package can run setup.py at
+# install time. Every dependency here publishes wheels; a new one that does not
+# will fail the build loudly rather than execute arbitrary code quietly.
+RUN pip install --no-cache-dir --only-binary :all: -r requirements.txt
 
 COPY engine/ ./engine/
 COPY app/ ./app/

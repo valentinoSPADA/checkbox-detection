@@ -76,7 +76,10 @@ RUN apt-get update \
 WORKDIR /app
 
 COPY detector/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# --only-binary refuses source distributions, so no package can run setup.py at
+# install time. Every dependency here publishes wheels; a new one that does not
+# will fail the build loudly rather than execute arbitrary code quietly.
+RUN pip install --no-cache-dir --only-binary :all: -r requirements.txt
 
 # Only what the request path needs. `training/` is deliberately absent: it pulls in torch,
 # which is hundreds of megabytes and is not used to serve a single request.
