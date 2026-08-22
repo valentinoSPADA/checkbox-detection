@@ -11,6 +11,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Also deploy to Fly.io after the gates pass"
+        type: boolean
+        default: false
 
 # A new push to the same branch cancels the previous run: on a series of quick fixes the
 # earlier results are stale anyway, and queuing them just delays the one that matters.
@@ -293,10 +298,14 @@ jobs:
     # built and smoke-tested by the job above, under the same 512 MB limit fly.toml requests.
     # Running it needs one secret and one `fly launch`.
     #
+    # Manual, and opt-in within manual. `workflow_dispatch` on its own means "re-run the
+    # gates", which is a thing to want on its own -- gating the deploy on it alone made every
+    # manual CI run attempt a deploy, and fail. Two intentions, two switches.
+    #
     # Manual rather than on-push because an automatic deploy without FLY_API_TOKEN configured
-    # is a permanently red pipeline that says nothing about the code. A red build should mean
-    # something is broken.
-    if: github.event_name == 'workflow_dispatch'
+    # is a permanently red pipeline that says nothing about the code, and because a repository
+    # whose reviewers are not its operators should not ship on every commit.
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy
     concurrency:
       group: deploy-production
       cancel-in-progress: false
