@@ -22,6 +22,13 @@ services:
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       ORT_THREADS: "1"
+      # glibc keeps a per-thread arena and hands freed pages back reluctantly, so a process
+      # that peaks at ~200 MB per page settles at the high-water mark of all of them: RSS
+      # climbed to 1.2 GB over four requests before this. Two arenas and an eager trim
+      # threshold cost a little allocator contention on a single-worker service and keep
+      # steady-state memory near the working set instead of near the sum of past peaks.
+      MALLOC_ARENA_MAX: "2"
+      MALLOC_TRIM_THRESHOLD_: "131072"
       # Memory guards, enforced at the one place an upload is decoded. A byte limit at the
       # gateway cannot see these: compression ratio is chosen by the caller.
       MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-26214400}

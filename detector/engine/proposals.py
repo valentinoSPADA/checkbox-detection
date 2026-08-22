@@ -101,6 +101,11 @@ DEFAULT_TOL = 2
 # price the classifier had to pay on every page.
 BRIDGE = 3
 
+# Rows per block when measuring run lengths. Large enough that the per-block Python overhead
+# is irrelevant against the vectorised work, small enough that the four int32 temporaries the
+# calculation needs stay in the low megabytes instead of the low hundreds.
+_RUN_BLOCK = 512
+
 @dataclass(frozen=True)
 class Proposal:
     """A candidate checkbox location in source-image pixel coordinates."""
@@ -115,23 +120,55 @@ class Proposal:
         return [self.x, self.y, self.x + self.w, self.y + self.h]
 
 
-def _run_lengths(ink: np.ndarray, axis: int) -> np.ndarray:
+def _run_lengths(ink: np.ndarray, axis: int, cap: int | None = None) -> np.ndarray:
     """Length of the contiguous ink run starting at each pixel, along ``axis``.
 
     ``axis=1`` measures rightwards, ``axis=0`` downwards. Implemented with a reversed
     running minimum over the index of the next non-ink pixel, which is fully vectorised;
     the naive per-column Python loop this replaces cost ~19 s on a 2550x4200 page and
     dominated total request latency.
+
+    ``cap`` clamps every length to at most that value and, when it fits in a byte, returns
+    uint8 instead of int32. This is not an approximation: the only use of these lengths is
+    ``runs >= need`` with ``need`` bounded by ``span * max_side``, so any run longer than the
+    largest side under consideration is already indistinguishable from one exactly that long.
+    On a 2550x4200 page it takes the two retained arrays from 86 MB to 21 MB, which is the
+    difference between fitting a small container and not.
     """
     if axis == 0:
-        return _run_lengths(ink.T, 1).T
+        return _run_lengths(ink.T, 1, cap).T
 
-    _h, w = ink.shape
+    h, w = ink.shape
+    dtype = np.uint8 if (cap is not None and cap < 256) else np.int32
+    out = np.empty((h, w), dtype)
     idx = np.arange(w, dtype=np.int32)
-    # For every pixel, the index of the nearest non-ink pixel at or to its right (w if none).
-    nxt = np.where(~ink, idx[None, :], np.int32(w))
-    nxt = np.minimum.accumulate(nxt[:, ::-1], axis=1)[:, ::-1]
-    return np.where(ink, nxt - idx[None, :], 0).astype(np.int32)
+
+    # Computed in row blocks rather than over the whole page at once.
+    #
+    # Rows are independent for a rightward run, so any horizontal partition is exact: this
+    # changes the memory profile and nothing else, and the proposal count is identical either
+    # way. It matters because the vectorised form needs four int32 temporaries the size of its
+    # input, and this function is the single largest allocation the service makes.
+    #
+    # Swept on sample 1 (2550x4200), peak traced allocation for the whole propose() call:
+    #
+    #     block   128    512   1024   2048   whole page
+    #     peak     73     99    133    168      193 MB
+    #     secs   4.86   4.23   4.41   4.60     4.44
+    #
+    # 512 is the knee. Note the timings: blocking is not a speed/memory trade here, it is
+    # free -- the working set stays in cache, which pays back the per-block overhead. 128 is
+    # the only setting that costs anything, and it buys 26 MB for 15% of the runtime.
+    for y0 in range(0, h, _RUN_BLOCK):
+        block = ink[y0:y0 + _RUN_BLOCK]
+        # For every pixel, the index of the nearest non-ink pixel at or to its right, or w.
+        nxt = np.where(~block, idx[None, :], np.int32(w))
+        nxt = np.minimum.accumulate(nxt[:, ::-1], axis=1)[:, ::-1]
+        runs = np.where(block, nxt - idx[None, :], 0)
+        if cap is not None:
+            np.minimum(runs, cap, out=runs)
+        out[y0:y0 + _RUN_BLOCK] = runs
+    return out
 
 
 def propose(ink: np.ndarray,
@@ -163,27 +200,47 @@ def propose(ink: np.ndarray,
         ink_u8, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (BRIDGE, 1)))
     bridged_v = cv2.morphologyEx(
         ink_u8, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (1, BRIDGE)))
-    runs_r = _run_lengths(bridged_h.astype(bool), axis=1)
-    runs_d = _run_lengths(bridged_v.astype(bool), axis=0)
+    # Capped at max_side: see _run_lengths. Nothing in the sweep can ask about a longer run.
+    runs_r = _run_lengths(bridged_h.astype(bool), axis=1, cap=max_side)
+    runs_d = _run_lengths(bridged_v.astype(bool), axis=0, cap=max_side)
+    del bridged_h, bridged_v, ink_u8
 
     v_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 2 * tol + 1))
     h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2 * tol + 1, 1))
+
+    # Scratch buffers, allocated once and rewritten on every size.
+    #
+    # The sweep runs ~30 times on a full page, and the naive form allocates seven
+    # page-sized temporaries per pass -- a threshold mask, its uint8 cast, the dilation, its
+    # bool cast, twice over, plus the chain of ANDs. That is ~115 MB of churn per iteration,
+    # which the allocator does not hand back between requests: RSS climbed to 1.2 GB over
+    # four pages. Reusing buffers makes the loop allocate nothing but its results.
+    mask = np.empty((h, w), np.uint8)
+    dil_h = np.empty((h, w), np.uint8)
+    dil_v = np.empty((h, w), np.uint8)
+    acc = np.empty((h, w), bool)
 
     out: list[Proposal] = []
     for side in range(min_side, max_side + 1, SIZE_STEP):
         if side > min(h, w):
             break
         need = round(span * side)
+        hh, ww = h - side + 1, w - side + 1
+
         # Dilating along the perpendicular axis is what grants the +/- tol slack: a top rule
         # two pixels thick then satisfies the test at any of its rows.
-        horiz = cv2.dilate((runs_r >= need).astype(np.uint8), v_kernel).astype(bool)
-        vert = cv2.dilate((runs_d >= need).astype(np.uint8), h_kernel).astype(bool)
+        np.greater_equal(runs_r, need, out=mask, casting="unsafe")
+        cv2.dilate(mask, v_kernel, dst=dil_h)
+        np.greater_equal(runs_d, need, out=mask, casting="unsafe")
+        cv2.dilate(mask, h_kernel, dst=dil_v)
 
-        top = horiz[: h - side + 1, : w - side + 1]
-        bottom = horiz[side - 1:, : w - side + 1]
-        left = vert[: h - side + 1, : w - side + 1]
-        right = vert[: h - side + 1, side - 1:]
+        # Folded in place: each AND writes over the running result rather than producing a
+        # new array, so a four-way test costs one buffer instead of three.
+        window = acc[:hh, :ww]
+        np.logical_and(dil_h[:hh, :ww], dil_h[side - 1:, :ww], out=window)
+        np.logical_and(window, dil_v[:hh, :ww], out=window)
+        np.logical_and(window, dil_v[:hh, side - 1:], out=window)
 
-        ys, xs = np.nonzero(top & bottom & left & right)
+        ys, xs = np.nonzero(window)
         out.extend(Proposal(int(x), int(y), side, side) for y, x in zip(ys, xs, strict=False))
     return out

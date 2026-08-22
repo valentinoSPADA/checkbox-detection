@@ -21,6 +21,14 @@ from engine.proposals import Proposal, propose
 
 # Quantisation used when collapsing near-identical proposals. Centres within 4 px and sides
 # within 6 px of each other are treated as the same nomination.
+# Proposals cropped and scored per slice. Matched to the classifier's own inference batch so
+# the two do not chunk at different granularities and interleave badly; see the sweep behind
+# that number in engine/classifier.py.
+CROP_BATCH = 256
+
+# Classes the model emits: not_a_checkbox / unchecked / checked.
+NUM_CLASSES = 3
+
 _CENTRE_BUCKET = 4
 _SIZE_BUCKET = 6
 
@@ -97,10 +105,20 @@ class DetectionPipeline:
         if not deduped:
             return PipelineResult([], gray.shape[1], gray.shape[0], len(raw), 0)
 
-        crops = np.stack([
-            preprocess.crop_with_context(gray, p.x, p.y, p.w, p.h) for p in deduped
-        ])
-        probs = self._clf.predict(crops)
+        # Cropped and scored in slices, never all at once.
+        #
+        # The classifier already chunks its own inference, and that was defeated here: a
+        # dense page nominates ~31k proposals, and one np.stack over all of them is a 200 MB
+        # array built from a 200 MB list of pieces. Measured, the request went from a 140 MB
+        # process to a 640 MB one and the allocator did not hand it back. Slicing bounds the
+        # crop memory at the batch size -- ~13 MB -- regardless of how dense the page is.
+        probs = np.empty((len(deduped), NUM_CLASSES), np.float32)
+        for start in range(0, len(deduped), CROP_BATCH):
+            part = deduped[start:start + CROP_BATCH]
+            crops = np.stack([
+                preprocess.crop_with_context(gray, p.x, p.y, p.w, p.h) for p in part
+            ])
+            probs[start:start + len(part)] = self._clf.predict(crops)
 
         out: list[Candidate] = []
         for p, pr in zip(deduped, probs, strict=False):

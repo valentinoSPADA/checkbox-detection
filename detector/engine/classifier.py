@@ -26,7 +26,19 @@ DEFAULT_MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "checkb
 # Crops are scored in slices rather than as one array. A dense page can nominate tens of
 # thousands of proposals, and materialising every crop at once is what turns a 40 MB request
 # into a 500 MB one; chunking bounds peak memory independently of page size.
-_BATCH = 2048
+#
+# 256, and the size is not arbitrary. Peak memory is set by the ACTIVATIONS, not by the input:
+# the first block lifts a batch to 16 channels at 40x40, so a batch of N holds N*16*1600*4
+# bytes -- 210 MB at 2048, 26 MB at 256. Measured end to end on sample 1, fresh process each:
+#
+#     batch    128    256    512   1024   2048
+#     peak     207    208    225    332    544 MB
+#     secs    4.70   4.81   6.02   4.91   5.19
+#
+# The large batch was buying nothing. Throughput is flat across the whole range -- this model
+# is 72k parameters and the per-call overhead is irrelevant beside the convolution -- so 2048
+# cost 336 MB and was, if anything, slower. 256 sits at the floor with headroom above it.
+_BATCH = 256
 
 
 class ModelUnavailableError(RuntimeError):
@@ -57,6 +69,12 @@ class CheckboxClassifier:
                 f"model artifact not found at {path}; run 'python -m training.train' to build it"
             )
         opts = ort.SessionOptions()
+        # The CPU arena is disabled deliberately. It caches freed blocks per tensor shape and
+        # never returns them, and every page ends with a partial batch of a different size --
+        # so the arena grew a new bucket per request and RSS climbed request after request
+        # rather than settling. For a 300 KB model the arena buys little; predictability is
+        # worth more than the allocation it saves.
+        opts.enable_cpu_mem_arena = False
         if threads:
             opts.intra_op_num_threads = threads
             opts.inter_op_num_threads = 1
