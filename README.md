@@ -9,6 +9,15 @@ belongs next to their product.
 Detects and classifies checkboxes in appraisal document images, behind the `POST /detect`
 endpoint the challenge specifies.
 
+**Live: <https://checkbox-detection.fly.dev>**
+
+```bash
+curl -X POST -F "file=@samples/sample_1_urar_1004.png" https://checkbox-detection.fly.dev/detect
+```
+
+The machine scales to zero, so the first request after an idle period waits a few seconds for
+it to start. Detection itself is 4-7 s per page on a shared vCPU.
+
 Detection is a **two-stage local pipeline**: geometry proposes every square region that could
 be a checkbox, and a small trained CNN decides which ones are. It runs offline, needs no
 credentials of any kind, and costs nothing per page. The Go service has **zero external
@@ -91,16 +100,19 @@ container exits.** That is the opposite of what a supervisor normally does, and 
 an API left running after its sidecar has crashed reports itself as up while failing every
 request.
 
-**Nothing is published.** The challenge asks for build and run instructions, not a hosted URL,
-so the deploy is wired and verified but never fired: `fly launch` and one secret are all it
-needs. What CI does run on every push is the *image build and its smoke test*, under the same
-512 MB limit — that is the part with something to say about the code. The memory limit belongs
-in the test rather than in a document, because a regression that pushes peak memory past it is
-an OOM kill in production and a green suite everywhere else.
+Measured on the live instance, one `shared-cpu-1x` machine in `gru`: **284/284 boxes,
+precision 0.983, recall 1.000**, identical to local — the same `eval/evaluate.py` run against
+the deployed URL rather than a local port.
 
-The deploy job itself is `workflow_dispatch` only. An automatic deploy with no `FLY_API_TOKEN`
-configured is a permanently red pipeline that says nothing, and a red build should mean
-something is broken.
+CI builds this image on every push and smoke-tests it *under the same 512 MB limit*. The limit
+belongs in the test rather than in a document, because a regression that pushes peak memory
+past it is an OOM kill in production and a green suite everywhere else.
+
+The deploy job is `workflow_dispatch` only, and checks for `FLY_API_TOKEN` in a step rather
+than in the job's `if` — the secrets context is unavailable there, and failing with a sentence
+beats failing inside `flyctl` with an auth error that reads like an outage. Manual rather than
+on-push because a deploy that fires on every commit to a repository whose reviewers are not
+its operators is a way to break a demo, not a way to ship.
 
 ### Running without Docker
 
@@ -385,12 +397,10 @@ Each tied to a signal in the job description rather than added for its own sake.
   models share the blind spot.
 - **Upload guards at the layer that can enforce each one** — byte size and sniffed content
   type at the gateway, pixel bounds where the decode happens.
-- **A deployment that was built and measured rather than described.** One container, verified
-  running under the 512 MB its `fly.toml` requests, detecting all four samples with zero OOM
-  kills. It is deliberately not published — the challenge asks for build and run instructions,
-  and a hosted URL is a maintenance commitment rather than evidence. The measurement is the
-  evidence: it is what proved the memory work was enough, and what would have caught it not
-  being.
+- **A live deployment, measured rather than described.** One container on Fly, scaling to
+  zero, at <https://checkbox-detection.fly.dev>. The 512 MB it requests is a measured number:
+  peak is 236 MiB under sustained load including concurrent pages, with zero OOM kills. It
+  would not have fitted before the memory work — the same request used to peak at 620 MiB.
 - **React + TypeScript overlay viewer** — for a detector, the overlay *is* the demo, and it
   answers the role's opening line about interfaces that let humans act on AI decisions.
 - **Structured JSON logging, `/health` and `/ready` split correctly**, graceful shutdown,

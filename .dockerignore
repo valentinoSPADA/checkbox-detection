@@ -4,6 +4,10 @@
 **/node_modules
 **/__pycache__
 **/.pytest_cache
+# Includes backend/internal/webui/dist, and that is correct rather than incidental: the
+# committed placeholder must NOT reach the build, or a layer-cache miss could leave it in
+# place and ship a binary whose embedded UI is the "not bundled" page. The Dockerfile copies
+# the real bundle in from the ui stage before anything compiles.
 **/dist
 **/.venv
 detector/data
