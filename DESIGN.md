@@ -107,6 +107,10 @@ beat two services on both deploy simplicity and latency.
 
 ## 4. Detector as a port with three real adapters
 
+> **SUPERSEDED by §12.** Two of the three adapters were removed. The entry is kept as written
+> because the "would reconsider if" below names the condition that actually fired, and a
+> decision log that quietly edits itself after the fact is worth nothing.
+
 **Decision**: `Detector` is an interface in the Go domain. Three implementations satisfy it:
 `local` (the sidecar), `vlm` (Anthropic Claude vision), and `assisted` (local proposals with
 low-confidence candidates escalated to Claude).
@@ -310,6 +314,11 @@ classification one and would generalise better than either approach.
 
 ## 11. The escalation budget must scale with uncertainty, not be a constant
 
+> **SUPERSEDED by §12.** Escalation is gone with the engine that used it. The measurement below
+> stands and is the reason the reasoning is kept: a flat budget allocated help in inverse
+> proportion to how much a page needed it, which is a mistake that generalises well beyond this.
+
+
 **Decision**: `MaxEscalations` raised from 40 to 120, and adjudication chunked into batches of
 20 crops per model call.
 
@@ -346,3 +355,76 @@ per-tenant configuration rather than in a default. The genuinely better design i
 proportional to the band's population with a hard ceiling, but "how much may this page cost"
 is a policy decision belonging to whoever pays the bill, so it is exposed as
 `MAX_ESCALATIONS` rather than decided here.
+
+---
+
+## 12. Removing the vision engines
+
+**Decision**: `vlm` and `assisted` are deleted. One engine ships. The Go service now has zero
+external dependencies and the system needs no credential of any kind.
+
+**Why**: They made the product worse, and the measurement in §8 says why. A language model
+asked to locate checkboxes on a full page returns **plausible sizes at approximate positions**
+rather than measured ones — Haiku returned 45 boxes every one of which was exactly 24 px wide,
+and Opus 5 returned 43 at 19-20 px, both systematically offset. The constant width is the tell:
+it is emitting a reasonable answer, not measuring one. Geometry produces exact coordinates for
+free, so the paid path was buying a worse answer.
+
+`assisted` was the more defensible of the two, and it went for a different reason: with the
+classifier retrained on real labels (§13 of `docs/prototype-log.md`) the uncertainty band it
+fed on is nearly empty. Its premise — that the local model is often unsure — stopped being
+true, and a mechanism whose premise has expired is cost with no upside.
+
+**Tradeoff**: The port now has one adapter, and a port with one adapter is, on its face, just
+indirection. The submission also loses a live demonstration of third-party AI integration,
+which the JD explicitly asks about.
+
+Both are accepted, for reasons that are not consolation:
+
+* The removal is itself the stronger evidence about the seam. Deleting two of three engines
+  touched `cmd/api` and the engines map — no handler, no policy, no domain type changed
+  shape, and `TestDomainHasNoOutboundDependencies` never moved. An architecture is proved by
+  a change, and this was a bigger one than adding a third adapter would have been.
+* The AI integration did not go away, it moved off the request path. Claude labels training
+  data offline in `training/annotate.py`, and the argument for putting it there rather than in
+  the hot path is the measurement above. "We used a model where it was better than the
+  alternative, and stopped where it was worse" is a stronger answer in a review than a paid
+  call that runs on every page because it was impressive to have.
+
+**What was kept**: `Policy.SourceMinConfidence` and the `Source` field on every `Detection`,
+both of which are dead weight with one engine. They stay because the reason they exist is
+structural rather than incidental — confidences from different producers are not on the same
+scale — and because that was learned expensively: under one shared floor, every verdict from
+the second engine was silently discarded, so it paid for calls that could not change the answer
+by construction.
+
+**Would reconsider if**: A document family arrives where the geometry cannot propose the boxes
+at all — handwritten forms, photographs at an angle, anything where "four straight inked sides"
+stops describing a checkbox. That is a Stage 1 failure, and no classifier retraining fixes it;
+a vision model that reads the page as a page would then be the right tool rather than a more
+expensive way to do worse.
+
+## 13. Upload limits at two layers
+
+**Decision**: Byte size and content type are enforced in the Go gateway; pixel count and
+minimum side are enforced in the Python sidecar.
+
+**Why**: Neither layer can do the other's job.
+
+The gateway can bound the *body* cheaply, before it is buffered, using `MaxBytesReader` rather
+than the caller-supplied `Content-Length` — which is a claim, and which a chunked upload omits
+entirely. It can also sniff the format from the leading bytes, because the multipart header's
+Content-Type is likewise a claim and anything at all can arrive labelled `image/png`.
+
+What the gateway cannot bound is what the image *costs*, because compression ratio is chosen
+by whoever sends the file: a 25 MB PNG of flat colour decodes to hundreds of megapixels, and
+Stage 1 then allocates several full-resolution int32 arrays over it. That limit has to sit
+where the decode happens, and the decode happens once, in `engine.preprocess.decode`.
+
+**Tradeoff**: The rule "check input at the edge" is broken deliberately — one class of check
+lives two hops in. A reader looking only at the gateway will not see the whole story, which is
+why both `.env.example` and the README state the split as a table rather than a list.
+
+**Would reconsider if**: Go started decoding the image for its own reasons. It does not today
+and that is not an accident: the gateway owns policy, the sidecar owns pixels, and moving the
+pixel check outward would mean decoding every page twice to enforce it.

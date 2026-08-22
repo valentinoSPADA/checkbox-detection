@@ -11,6 +11,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/vspada/checkbox-detection/backend/internal/config"
@@ -140,16 +141,17 @@ func (s *Server) handleVersion(w http.ResponseWriter, _ *http.Request) {
 
 // handleEngines answers GET /engines -- which detection strategies this instance can run.
 //
-// Exists because engine availability is configuration-dependent: without an API key the
-// vlm and assisted engines are not registered, and a UI that offered them anyway would be
-// showing the user a button that always fails. No side effects.
+// One engine ships today, so the answer is constant, and the endpoint could be deleted. It is
+// not, because it is the contract that lets the UI stop hard-coding what the backend supports:
+// a build that registers a second engine starts advertising it without a frontend release.
+// Enumerating from the registry rather than from a literal is what makes that true.
+// No side effects.
 func (s *Server) handleEngines(w http.ResponseWriter, _ *http.Request) {
 	names := make([]string, 0, len(s.engines))
-	for _, n := range []domain.EngineName{domain.EngineLocal, domain.EngineVLM, domain.EngineAssisted} {
-		if _, ok := s.engines[n]; ok {
-			names = append(names, string(n))
-		}
+	for n := range s.engines {
+		names = append(names, string(n))
 	}
+	sort.Strings(names) // deterministic order: the UI renders these in the order given
 	s.writeJSON(w, http.StatusOK, map[string]any{
 		"engines": names,
 		"default": string(s.defaultNm),

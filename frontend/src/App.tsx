@@ -11,9 +11,22 @@ import { applyTheme, initialTheme, type Theme } from './lib/theme'
 import { Overlay } from './components/Overlay'
 import { Lightbox } from './components/Lightbox'
 import { Icon } from './components/Icon'
+import { ResultSkeleton } from './components/ResultSkeleton'
+import { useDetectProgress } from './lib/useDetectProgress'
 
 /** Height of the inline preview frame, in CSS px. See `.preview` in styles.css for why. */
 const PREVIEW_HEIGHT = 420
+
+/**
+ * Upload guards, mirroring the ones the API enforces.
+ *
+ * Duplicated on the client deliberately. The server's limits are the real ones — a browser
+ * check is trivially bypassed and is not a security boundary — but rejecting a 200 MB file
+ * here saves the user a minute of uploading to earn a 413, which is the worse experience for
+ * exactly the person who did nothing malicious.
+ */
+const MAX_UPLOAD_BYTES = 25 * 1024 * 1024
+const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/tiff']
 
 /**
  * The whole UI.
@@ -29,20 +42,18 @@ export default function App() {
   const [result, setResult] = useState<DetectResponse | null>(null)
   const [error, setError] = useState<string>('')
   const [busy, setBusy] = useState(false)
-  const [engines, setEngines] = useState<EngineName[]>(['local'])
   const [engine, setEngine] = useState<EngineName>('local')
   // Matches the server's calibrated default (domain.DefaultPolicy). Starting lower would
-  // greet the user with the noise floor — roughly twelve times too many boxes — and make a
-  // working detector look broken before they have touched anything.
-  const [threshold, setThreshold] = useState(0.90)
+  // greet the user with the noise floor and make a working detector look broken before they
+  // have touched anything.
+  const [threshold, setThreshold] = useState(0.9)
   const [dragging, setDragging] = useState(false)
-  // True when the on-screen result no longer reflects the current engine selection.
-  const [stale, setStale] = useState(false)
   const [expanded, setExpanded] = useState(false)
 
-  // Held in a ref so a new run can cancel the previous one. Without this, switching from the
-  // slow vlm engine to the fast local engine can let the stale response land last and
-  // overwrite the fresh one — a bug that looks like the wrong engine having run.
+  const progress = useDetectProgress(busy)
+
+  // Held in a ref so a new run cancels the previous one, and so a stale response can never
+  // land after a fresh one and overwrite it.
   const inflight = useRef<AbortController | null>(null)
 
   useEffect(() => {
@@ -52,12 +63,9 @@ export default function App() {
   useEffect(() => {
     const ctl = new AbortController()
     listEngines(ctl.signal)
-      .then((r) => {
-        setEngines(r.engines)
-        setEngine(r.default)
-      })
+      .then((r) => setEngine(r.default))
       .catch(() => {
-        // Non-fatal: the picker falls back to `local`, which every instance always has.
+        // Non-fatal: `local` is what every instance registers.
       })
     return () => ctl.abort()
   }, [])
@@ -91,29 +99,38 @@ export default function App() {
     }
   }, [])
 
-  // Selecting a file loads it for display but does NOT detect, and neither does changing the
-  // engine. Detection is explicit.
-  //
-  // The earlier auto-run was actively harmful: picking a file and then trying two engines
-  // fired three requests, two of which the user never asked for, and on the paid engines each
-  // one costs money. Choosing what to run and choosing to run it are different decisions, and
-  // an interface that conflates them spends the user's budget on their behalf.
+  /**
+   * Accept a file, or say why not.
+   *
+   * Selecting a file loads it for display but does NOT detect. Choosing what to run and
+   * choosing to run it are different decisions, and an earlier auto-run conflated them:
+   * picking a file fired a request the user never asked for.
+   */
   const onFile = useCallback((f: File) => {
-    setFile(f)
     setResult(null)
+    if (f.size > MAX_UPLOAD_BYTES) {
+      setFile(null)
+      setError(
+        `“${f.name}” is ${(f.size / 1024 / 1024).toFixed(1)} MB; the limit is ${
+          MAX_UPLOAD_BYTES / 1024 / 1024
+        } MB.`,
+      )
+      return
+    }
+    // An empty type is allowed through rather than rejected: some browsers report nothing for
+    // a dragged file, and the server sniffs the actual bytes anyway. Guessing here would block
+    // a valid upload in order to enforce a check that is not this layer's job.
+    if (f.type && !ACCEPTED_TYPES.includes(f.type)) {
+      setFile(null)
+      setError(`“${f.name}” is ${f.type}. Expected a PNG, JPEG, WEBP or TIFF image.`)
+      return
+    }
     setError('')
-  }, [])
-
-  const onEngineChange = useCallback((next: EngineName) => {
-    setEngine(next)
-    // The previous result stays on screen, but it was produced by a different engine and
-    // saying so is better than silently relabelling it.
-    setStale(true)
+    setFile(f)
   }, [])
 
   const onDetect = useCallback(() => {
     if (!file || busy) return
-    setStale(false)
     void run(file, engine)
   }, [busy, engine, file, run])
 
@@ -174,7 +191,7 @@ export default function App() {
             >
               <input
                 type="file"
-                accept="image/*"
+                accept={ACCEPTED_TYPES.join(',')}
                 onChange={(e) => {
                   const f = e.target.files?.[0]
                   if (f) onFile(f)
@@ -187,32 +204,12 @@ export default function App() {
                   <span className="hint">Drop another page, or click to replace</span>
                 </>
               ) : (
-                <span className="hint">Drop a document image here, or click to choose</span>
+                <>
+                  <span className="hint">Drop a document image here, or click to choose</span>
+                  <span className="hint">PNG, JPEG, WEBP or TIFF · up to 25 MB</span>
+                </>
               )}
             </label>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <span className="label" id="engine-label">
-                Engine
-              </span>
-              <div className="segmented" role="radiogroup" aria-labelledby="engine-label">
-                {engines.map((name) => (
-                  <button
-                    key={name}
-                    className="segmented__item"
-                    role="radio"
-                    aria-checked={engine === name}
-                    disabled={busy}
-                    onClick={() => onEngineChange(name)}
-                  >
-                    {ENGINE_INFO[name].label}
-                  </button>
-                ))}
-              </div>
-              <span className="hint" style={{ minHeight: 34 }}>
-                {ENGINE_INFO[engine].hint}
-              </span>
-            </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button className="btn btn--primary" onClick={onDetect} disabled={!file || busy}>
@@ -220,24 +217,9 @@ export default function App() {
                 {busy ? 'Detecting…' : result ? 'Detect again' : 'Detect'}
               </button>
 
-              {!file && <span className="hint">Choose an image first.</span>}
-              {file && stale && result && (
-                <span className="notice notice--warn">
-                  <Icon name="alert" size={15} />
-                  <span>
-                    Showing the previous result from “{ENGINE_INFO[result.meta.engine].label}”.
-                    Press Detect to run “{ENGINE_INFO[engine].label}”.
-                  </span>
-                </span>
-              )}
-              {file && !stale && !result && !busy && (
+              {!file && !error && <span className="hint">Choose an image first.</span>}
+              {file && !result && !busy && !error && (
                 <span className="hint">Ready — nothing has been sent to the API yet.</span>
-              )}
-              {engine !== 'local' && (
-                <span className="notice notice--warn">
-                  <Icon name="alert" size={15} />
-                  <span>This engine calls Claude and costs money per run.</span>
-                </span>
               )}
               {error && (
                 <span className="notice notice--error">
@@ -279,15 +261,9 @@ export default function App() {
         </div>
 
         <div className="viewer">
-          {busy && (
-            <p className="status">
-              <span className="spinner" />
-              Detecting…
-              {engine !== 'local' && ' this engine calls a model and can take a while.'}
-            </p>
-          )}
+          {busy && <ResultSkeleton percent={progress} height={PREVIEW_HEIGHT} />}
 
-          {result && (
+          {!busy && result && (
             <>
               <div className="stats">
                 <Stat value={visible.length} label="Shown" />
@@ -295,9 +271,6 @@ export default function App() {
                 <Stat value={visible.length - checkedCount} label="Unchecked" tone="unchecked" />
                 <Stat value={ENGINE_INFO[result.meta.engine].label} label="Engine" />
                 <Stat value={formatLatency(result.meta.elapsed_ms)} label="Latency" />
-                {result.meta.stats.escalated ? (
-                  <Stat value={result.meta.stats.escalated} label="Escalated" />
-                ) : null}
               </div>
 
               <div className="card viewer__card">

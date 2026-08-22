@@ -5,8 +5,14 @@
  * the exported types, so a change to the backend contract lands here and nowhere else.
  */
 
-/** Which detection strategy the backend should run. */
-export type EngineName = 'local' | 'vlm' | 'assisted'
+/**
+ * Which detection strategy the backend should run.
+ *
+ * One value today. The type, the `source` field and the `/engines` lookup all survive a
+ * single-engine build on purpose: the backend enumerates its registry rather than a literal,
+ * so registering a second engine there starts advertising it without a frontend release.
+ */
+export type EngineName = 'local'
 
 /** One detected checkbox, in source-image pixel coordinates. */
 export interface DetectedBox {
@@ -15,7 +21,7 @@ export interface DetectedBox {
   is_checked: boolean
   /** Probability of the winning class. Present only on verbose responses. */
   confidence: number
-  /** Which engine produced this box; `assisted` mixes two sources in one response. */
+  /** Which engine produced this box. Per-box, so a mixed-source response stays attributable. */
   source: EngineName
 }
 
@@ -29,7 +35,6 @@ export interface DetectMeta {
     raw_proposals?: number
     scored_proposals?: number
     candidates: number
-    escalated?: number
     returned: number
   }
 }
@@ -119,9 +124,9 @@ export async function detect(
 /**
  * List the engines this backend instance can actually run.
  *
- * Engine availability is configuration-dependent — without an API key the vision engines are
- * not registered — so the UI asks rather than assuming, and never offers a control that is
- * guaranteed to fail.
+ * Asked rather than assumed. It reports one engine today, and the call is kept because the
+ * alternative — hard-coding the list in the UI — is what makes a backend change require a
+ * frontend release to become visible.
  */
 export async function listEngines(signal?: AbortSignal): Promise<EnginesResponse> {
   const response = await fetch(`${API_BASE}/engines`, { signal })
@@ -131,18 +136,10 @@ export async function listEngines(signal?: AbortSignal): Promise<EnginesResponse
   return (await response.json()) as EnginesResponse
 }
 
-/** Human-readable label and description for each engine, used by the picker. */
+/** Human-readable label for each engine, used wherever one is named in the UI. */
 export const ENGINE_INFO: Record<EngineName, { label: string; hint: string }> = {
   local: {
     label: 'Local',
-    hint: 'Geometric proposals plus the trained CNN. Fast, free, runs offline.',
-  },
-  vlm: {
-    label: 'Claude vision',
-    hint: 'The page is tiled and read directly by Claude. Slow and paid, but needs no training.',
-  },
-  assisted: {
-    label: 'Assisted',
-    hint: 'Local pipeline, with only its uncertain candidates escalated to Claude.',
+    hint: 'Geometric proposals plus a trained CNN. Runs offline, costs nothing per page.',
   },
 }

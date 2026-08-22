@@ -13,23 +13,31 @@ browser / curl
       │  multipart POST /detect?engine=…
       ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ backend  (Go)                                               │
+│ backend  (Go)                     no external dependencies  │
 │                                                             │
 │  httpapi ──────────► domain.Detector (PORT) ◄────────────┐  │
 │  inbound adapter          │                              │  │
-│  parse, validate,         ├── localengine  (adapter) ────┼──┼──► detector (Python)
-│  delegate, shape          ├── vlm          (adapter) ────┼──┼──► Anthropic API
-│                           └── assisted     (adapter) ────┘  │
-│                                    │                        │
+│  parse, validate,         └── localengine  (adapter) ────┼──┼──► detector (Python)
+│  sniff, delegate                   │                        │
 │                            domain.Policy                    │
-│              suppression · threshold · escalation · merge   │
+│                    threshold · suppression · cap            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-The `assisted` adapter is itself a composite: it holds `localengine` and calls the vision
-model only for the candidates `domain.Policy.SelectForEscalation` hands it. That it can be
-built out of the other two without either knowing is the practical test that the port is a
-real seam.
+**One adapter ships, and the port is still load-bearing.** Two others existed here — `vlm`,
+which sent the page to Claude, and `assisted`, a composite holding `localengine` and
+escalating only its uncertain candidates — and both were removed after measurement: a language
+model returns plausible box sizes at approximate positions rather than measured ones, which is
+a worse answer than the geometry produces for free, and it costs money per page. `DESIGN.md`
+keeps the numbers as a rejected alternative.
+
+What that removal demonstrates is the point of the seam, from the other direction: deleting
+two of three engines touched `cmd/api` and the engines map. No handler, no policy, no domain
+type changed shape. An architecture is only proved by a change, and this was one.
+
+It also left the Go service with **zero external dependencies** — `go.mod` names none — which
+is what a supply chain looks like when the only thing crossing the network is one HTTP call to
+a service in the same compose file.
 
 ## Folder → concept
 
@@ -45,18 +53,12 @@ real seam.
                                test the isolation claim would be a convention, and the first
                                `import "net/http"` would pass review unnoticed.
   /internal/detector         → Outbound adapters. One sub-package per Detector implementation:
-    /localengine               HTTP client for the Python sidecar.
-    /vlm                       Anthropic Claude vision, with page tiling and concurrency.
-      /prompts                 Prompt text as data files, embedded via go:embed. Kept here
-                               rather than as Go constants because the offline annotation
-                               tool reads these same bytes — one source of truth for what
-                               "checkbox" means to a model.
-    /assisted                  Composite: local pipeline + escalation of the uncertain band.
-  /internal/httpapi          → Inbound adapter. Routes, middleware, DTOs. Contains no
-                               detection logic; if a handler ever branches on a confidence
-                               value, that logic has leaked out of the domain.
-  /internal/imaging          → Adapter-side pixel utilities (decode, resize, tile, crop).
-                               Deliberately NOT in the domain: only the vlm adapter needs it.
+    /localengine               HTTP client for the Python sidecar. Currently the only one.
+  /internal/httpapi          → Inbound adapter. Routes, middleware, DTOs, and the upload
+                               guards: size, and content sniffed from the bytes rather than
+                               trusted from the caller's header. Contains no detection logic;
+                               if a handler ever branches on a confidence value, that logic
+                               has leaked out of the domain.
   /internal/config           → Environment loading and eager validation.
   /internal/observability    → Structured logging setup.
 
@@ -69,9 +71,17 @@ real seam.
                                torch, which is what keeps the serving image small.
     pipeline.py                wires the two stages; returns candidates UNSUPPRESSED, because
                                suppression is policy and policy lives in Go.
-  /training                  → Offline only; never installed into the runtime image.
+  /training                  → Offline only; never installed into the runtime image, and not
+                               on any request path. This is where a paid model is still used:
+                               once, to label training data, with the result committed.
     synth.py                   procedural training-data generator.
     model.py / train.py        architecture, training loop, ONNX export.
+    annotate.py                Claude labels real Stage 1 proposals; every verdict is checked
+                               against a pixel measurement before it is kept.
+    make_labeling_task.py      builds a self-contained HTML page for labelling by hand.
+    import_labels.py           merges hand labels over model labels; hand labels win.
+    /prompts                   Prompt text as data files rather than string constants, so the
+                               annotator and the evaluation harness read the same bytes.
   /models                    → The committed model artifact. Versioned deliberately: a
                                reviewer must be able to clone and run without training.
   /tests                     → Stage 1 and preprocessing tests, on synthetic pages whose

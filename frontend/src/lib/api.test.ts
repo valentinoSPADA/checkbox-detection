@@ -32,10 +32,10 @@ describe('detect', () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ boxes: [], meta: {} }))
     vi.stubGlobal('fetch', fetchMock)
 
-    await detect(new File(['x'], 'page.png'), { engine: 'assisted', minConfidence: 0.42 })
+    await detect(new File(['x'], 'page.png'), { engine: 'local', minConfidence: 0.42 })
 
     const url = new URL(fetchMock.mock.calls[0][0] as string)
-    expect(url.searchParams.get('engine')).toBe('assisted')
+    expect(url.searchParams.get('engine')).toBe('local')
     expect(url.searchParams.get('min_confidence')).toBe('0.42')
   })
 

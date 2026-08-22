@@ -24,22 +24,16 @@ type Config struct {
 	DetectorURL string
 	// DetectorTimeout bounds one sidecar call.
 	DetectorTimeout time.Duration
-	// RequestTimeout bounds an entire inbound request, including any escalation.
+	// RequestTimeout bounds an entire inbound request.
 	RequestTimeout time.Duration
 	// MaxUploadBytes rejects oversized uploads before they are buffered.
+	//
+	// Byte size is the only limit this service can enforce cheaply: it does not decode the
+	// image -- the sidecar does -- so pixel-dimension limits live there, where the decode
+	// already happens. Enforcing them here would mean decoding every page twice.
 	MaxUploadBytes int64
 	// DefaultEngine is used when a request does not name one.
 	DefaultEngine domain.EngineName
-	// AnthropicAPIKey enables the VLM and assisted engines when present.
-	AnthropicAPIKey string
-	// AnthropicModel is the vision model used by the VLM adapter.
-	AnthropicModel string
-	// VLMTimeout bounds one model call.
-	VLMTimeout time.Duration
-	// VLMMaxImageDim downsizes pages before upload; 0 disables resizing.
-	VLMMaxImageDim int
-	// VLMBatchSize is how many candidate crops go into one adjudication call.
-	VLMBatchSize int
 	// Policy holds the detection thresholds.
 	Policy domain.Policy
 	// CORSOrigins lists browser origins allowed to call the API.
@@ -62,11 +56,6 @@ func Load() (Config, error) {
 		DetectorTimeout: envDuration("DETECTOR_TIMEOUT", 60*time.Second),
 		RequestTimeout:  envDuration("REQUEST_TIMEOUT", 120*time.Second),
 		MaxUploadBytes:  int64(envInt("MAX_UPLOAD_BYTES", 25*1024*1024)),
-		AnthropicAPIKey: os.Getenv("ANTHROPIC_API_KEY"),
-		AnthropicModel:  env("ANTHROPIC_MODEL", "claude-haiku-4-5"),
-		VLMTimeout:      envDuration("VLM_TIMEOUT", 180*time.Second),
-		VLMMaxImageDim:  envInt("VLM_MAX_IMAGE_DIM", 1568),
-		VLMBatchSize:    envInt("VLM_BATCH_SIZE", 0),
 		CORSOrigins:     splitAndTrim(env("CORS_ORIGINS", "*")),
 		LogLevel:        env("LOG_LEVEL", "info"),
 	}
@@ -75,9 +64,6 @@ func Load() (Config, error) {
 	policy.MinConfidence = envFloat("MIN_CONFIDENCE", policy.MinConfidence)
 	policy.IoUThreshold = envFloat("IOU_THRESHOLD", policy.IoUThreshold)
 	policy.MaxDetections = envInt("MAX_DETECTIONS", policy.MaxDetections)
-	policy.EscalateAbove = envFloat("ESCALATE_ABOVE", policy.EscalateAbove)
-	policy.EscalateBelow = envFloat("ESCALATE_BELOW", policy.EscalateBelow)
-	policy.MaxEscalations = envInt("MAX_ESCALATIONS", policy.MaxEscalations)
 	cfg.Policy = policy
 
 	engine, err := domain.ParseEngine(os.Getenv("DEFAULT_ENGINE"), domain.EngineLocal)
@@ -91,11 +77,10 @@ func Load() (Config, error) {
 
 // Validate rejects combinations that would produce confusing runtime behaviour.
 //
-// The escalation-band check is the one worth calling out: if EscalateAbove were ever >=
-// EscalateBelow the band would be empty, escalation would silently never fire, and the
-// assisted engine would degrade into the local engine while still reporting itself as
-// assisted. That is exactly the kind of silent no-op that costs an afternoon to diagnose,
-// so it is refused at startup.
+// Refused at startup rather than at the first request, because a service that boots and then
+// fails every call looks healthy to whatever is watching it. Each check below guards a
+// setting whose wrong value produces a *plausible* result rather than an obvious error --
+// a threshold outside [0,1] silently returns everything or nothing.
 func (c Config) Validate() error {
 	var errs []error
 	if c.Addr == "" {
@@ -113,17 +98,8 @@ func (c Config) Validate() error {
 	if c.Policy.IoUThreshold < 0 || c.Policy.IoUThreshold > 1 {
 		errs = append(errs, errors.New("IOU_THRESHOLD must be within [0,1]"))
 	}
-	if c.Policy.EscalateAbove >= c.Policy.EscalateBelow {
-		errs = append(errs, errors.New("ESCALATE_ABOVE must be below ESCALATE_BELOW or the band is empty"))
-	}
-	if c.DefaultEngine != domain.EngineLocal && c.AnthropicAPIKey == "" {
-		errs = append(errs, fmt.Errorf("DEFAULT_ENGINE=%s requires ANTHROPIC_API_KEY", c.DefaultEngine))
-	}
 	return errors.Join(errs...)
 }
-
-// VLMEnabled reports whether the language-model engines can be registered.
-func (c Config) VLMEnabled() bool { return c.AnthropicAPIKey != "" }
 
 func env(key, def string) string {
 	if v, ok := os.LookupEnv(key); ok && v != "" {

@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image"
+	"image/png"
 	"io"
 	"log/slog"
 	"mime/multipart"
@@ -68,6 +70,23 @@ func testServer(t *testing.T, engines map[domain.EngineName]domain.Detector) *Se
 	})
 }
 
+// pngBytes is a real, minimal PNG.
+//
+// The tests used arbitrary bytes as a stand-in for an image until the upload path started
+// sniffing content, at which point every one of them began asserting against a 415 instead of
+// against the handler. Encoding a genuine 1x1 PNG keeps them exercising what they name.
+//
+// The handler does not decode the image -- the sidecar does, and it is faked here -- so the
+// pixels are irrelevant; only the magic bytes matter.
+func pngBytes(t *testing.T) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, image.NewRGBA(image.Rect(0, 0, 1, 1))); err != nil {
+		t.Fatalf("encoding test png: %v", err)
+	}
+	return buf.Bytes()
+}
+
 func multipartBody(t *testing.T, field, filename string, content []byte) (*bytes.Buffer, string) {
 	t.Helper()
 	var buf bytes.Buffer
@@ -113,7 +132,7 @@ func TestDetectReturnsExactlyTheSpecifiedSchema(t *testing.T) {
 	fake := &fakeDetector{name: domain.EngineLocal, result: sampleResult()}
 	srv := testServer(t, map[domain.EngineName]domain.Detector{domain.EngineLocal: fake})
 
-	rec := post(t, srv, "/detect", "file", []byte("fake-png-bytes"))
+	rec := post(t, srv, "/detect", "file", pngBytes(t))
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d, body = %s", rec.Code, rec.Body.String())
 	}
@@ -157,7 +176,7 @@ func TestDetectReturnsExactlyTheSpecifiedSchema(t *testing.T) {
 func TestDetectEmptyResultSerialisesAsArray(t *testing.T) {
 	fake := &fakeDetector{name: domain.EngineLocal, result: domain.Result{Width: 10, Height: 10}}
 	srv := testServer(t, map[domain.EngineName]domain.Detector{domain.EngineLocal: fake})
-	rec := post(t, srv, "/detect", "file", []byte("x"))
+	rec := post(t, srv, "/detect", "file", pngBytes(t))
 	if body := strings.TrimSpace(rec.Body.String()); body != `{"boxes":[]}` {
 		t.Fatalf("empty result serialised as %s, want {\"boxes\":[]}", body)
 	}
@@ -166,7 +185,7 @@ func TestDetectEmptyResultSerialisesAsArray(t *testing.T) {
 func TestDetectVerboseAddsDiagnosticsWithoutRenamingSpecifiedKeys(t *testing.T) {
 	fake := &fakeDetector{name: domain.EngineLocal, result: sampleResult()}
 	srv := testServer(t, map[domain.EngineName]domain.Detector{domain.EngineLocal: fake})
-	rec := post(t, srv, "/detect?verbose=true", "file", []byte("x"))
+	rec := post(t, srv, "/detect?verbose=true", "file", pngBytes(t))
 
 	var out struct {
 		Boxes []struct {
@@ -198,7 +217,7 @@ func TestDetectAcceptsAlternateFieldNames(t *testing.T) {
 		t.Run(field, func(t *testing.T) {
 			fake := &fakeDetector{name: domain.EngineLocal, result: sampleResult()}
 			srv := testServer(t, map[domain.EngineName]domain.Detector{domain.EngineLocal: fake})
-			rec := post(t, srv, "/detect", field, []byte("x"))
+			rec := post(t, srv, "/detect", field, pngBytes(t))
 			if rec.Code != http.StatusOK {
 				t.Fatalf("field %q rejected: status %d, body %s", field, rec.Code, rec.Body.String())
 			}
@@ -239,7 +258,10 @@ func TestDetectRejectsEmptyFile(t *testing.T) {
 func TestDetectRejectsOversizedUpload(t *testing.T) {
 	fake := &fakeDetector{name: domain.EngineLocal, result: sampleResult()}
 	srv := testServer(t, map[domain.EngineName]domain.Detector{domain.EngineLocal: fake})
-	rec := post(t, srv, "/detect", "file", bytes.Repeat([]byte("A"), 2<<20)) // limit is 1 MiB
+	// A real PNG header followed by padding: the size check has to fire before the content
+	// check, or an oversized upload would be reported as the wrong kind of error.
+	oversized := append(pngBytes(t), bytes.Repeat([]byte("A"), 2<<20)...)
+	rec := post(t, srv, "/detect", "file", oversized) // limit is 1 MiB
 	if rec.Code != http.StatusRequestEntityTooLarge {
 		t.Fatalf("status = %d, want 413", rec.Code)
 	}
@@ -248,18 +270,19 @@ func TestDetectRejectsOversizedUpload(t *testing.T) {
 func TestDetectUnknownEngineIsRejected(t *testing.T) {
 	fake := &fakeDetector{name: domain.EngineLocal, result: sampleResult()}
 	srv := testServer(t, map[domain.EngineName]domain.Detector{domain.EngineLocal: fake})
-	rec := post(t, srv, "/detect?engine=telepathy", "file", []byte("x"))
+	rec := post(t, srv, "/detect?engine=telepathy", "file", pngBytes(t))
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want 400", rec.Code)
 	}
 }
 
 func TestDetectUnregisteredEngineIsRejectedNotSubstituted(t *testing.T) {
-	// Without an API key the vlm engine is absent. Silently running the local engine instead
-	// would make an accuracy comparison meaningless, so the request must fail loudly.
+	// A build registers the engines it ships with, and a request naming any other one must
+	// fail loudly. Silently running whatever is available instead would misattribute every
+	// box in the response to an engine that never ran.
 	fake := &fakeDetector{name: domain.EngineLocal, result: sampleResult()}
 	srv := testServer(t, map[domain.EngineName]domain.Detector{domain.EngineLocal: fake})
-	rec := post(t, srv, "/detect?engine=vlm", "file", []byte("x"))
+	rec := post(t, srv, "/detect?engine=vlm", "file", pngBytes(t))
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want 400", rec.Code)
 	}
@@ -272,7 +295,7 @@ func TestDetectMinConfidenceOverride(t *testing.T) {
 	fake := &fakeDetector{name: domain.EngineLocal, result: sampleResult()}
 	srv := testServer(t, map[domain.EngineName]domain.Detector{domain.EngineLocal: fake})
 
-	rec := post(t, srv, "/detect?min_confidence=0.1", "file", []byte("x"))
+	rec := post(t, srv, "/detect?min_confidence=0.1", "file", pngBytes(t))
 	var out detectOut
 	if err := json.Unmarshal(rec.Body.Bytes(), &out); err != nil {
 		t.Fatalf("decoding: %v", err)
@@ -281,7 +304,7 @@ func TestDetectMinConfidenceOverride(t *testing.T) {
 		t.Fatalf("got %d boxes at min_confidence=0.1, want all 3", len(out.Boxes))
 	}
 
-	bad := post(t, srv, "/detect?min_confidence=7", "file", []byte("x"))
+	bad := post(t, srv, "/detect?min_confidence=7", "file", pngBytes(t))
 	if bad.Code != http.StatusBadRequest {
 		t.Fatalf("out-of-range min_confidence: status %d, want 400", bad.Code)
 	}
@@ -301,7 +324,7 @@ func TestDetectErrorMapping(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fake := &fakeDetector{name: domain.EngineLocal, err: fmt.Errorf("wrapped: %w", tc.err)}
 			srv := testServer(t, map[domain.EngineName]domain.Detector{domain.EngineLocal: fake})
-			rec := post(t, srv, "/detect", "file", []byte("x"))
+			rec := post(t, srv, "/detect", "file", pngBytes(t))
 			if rec.Code != tc.want {
 				t.Fatalf("status = %d, want %d", rec.Code, tc.want)
 			}
@@ -312,7 +335,7 @@ func TestDetectErrorMapping(t *testing.T) {
 func TestDetectTimeoutReturns504(t *testing.T) {
 	fake := &fakeDetector{name: domain.EngineLocal, result: sampleResult(), delay: 3 * time.Second}
 	srv := testServer(t, map[domain.EngineName]domain.Detector{domain.EngineLocal: fake})
-	rec := post(t, srv, "/detect", "file", []byte("x")) // server timeout is 2s
+	rec := post(t, srv, "/detect", "file", pngBytes(t)) // server timeout is 2s
 	if rec.Code != http.StatusGatewayTimeout {
 		t.Fatalf("status = %d, want 504", rec.Code)
 	}
@@ -324,7 +347,7 @@ func TestDetectInternalErrorLeaksNoDetail(t *testing.T) {
 	secret := "postgres://user:hunter2@internal-host/db"
 	fake := &fakeDetector{name: domain.EngineLocal, err: errors.New(secret)}
 	srv := testServer(t, map[domain.EngineName]domain.Detector{domain.EngineLocal: fake})
-	rec := post(t, srv, "/detect", "file", []byte("x"))
+	rec := post(t, srv, "/detect", "file", pngBytes(t))
 	if strings.Contains(rec.Body.String(), "hunter2") || strings.Contains(rec.Body.String(), "internal-host") {
 		t.Fatalf("internal error detail leaked to the client: %s", rec.Body.String())
 	}
@@ -333,12 +356,59 @@ func TestDetectInternalErrorLeaksNoDetail(t *testing.T) {
 func TestDetectForwardsUploadMetadata(t *testing.T) {
 	fake := &fakeDetector{name: domain.EngineLocal, result: sampleResult()}
 	srv := testServer(t, map[domain.EngineName]domain.Detector{domain.EngineLocal: fake})
-	post(t, srv, "/detect", "file", []byte("payload"))
+	payload := pngBytes(t)
+	post(t, srv, "/detect", "file", payload)
 	if fake.gotImg.Filename != "page.png" {
 		t.Fatalf("filename = %q, want page.png", fake.gotImg.Filename)
 	}
-	if string(fake.gotImg.Data) != "payload" {
-		t.Fatalf("payload was altered in transit: %q", fake.gotImg.Data)
+	if !bytes.Equal(fake.gotImg.Data, payload) {
+		t.Fatal("payload was altered in transit")
+	}
+	// ContentType must be what the bytes are, not what the multipart header claimed. The
+	// sidecar and the logs both read this field.
+	if fake.gotImg.ContentType != "image/png" {
+		t.Fatalf("ContentType = %q, want the sniffed image/png", fake.gotImg.ContentType)
+	}
+}
+
+// TestDetectRejectsNonImageBytes covers the check that keeps arbitrary uploads out of an
+// image decoder. The multipart header's own Content-Type is a caller-supplied claim, so it is
+// deliberately set to a plausible lie here and the bytes are what must decide.
+func TestDetectRejectsNonImageBytes(t *testing.T) {
+	fake := &fakeDetector{name: domain.EngineLocal, result: sampleResult()}
+	srv := testServer(t, map[domain.EngineName]domain.Detector{domain.EngineLocal: fake})
+	rec := post(t, srv, "/detect", "file", []byte("%PDF-1.7 not an image at all"))
+	if rec.Code != http.StatusUnsupportedMediaType {
+		t.Fatalf("status = %d, want 415", rec.Code)
+	}
+	if fake.callCnt != 0 {
+		t.Fatal("a non-image upload reached the detector")
+	}
+}
+
+// TestSniffContentType pins the format list against the sidecar's. A format accepted here but
+// not there fails deep inside the sidecar as a 500 instead of at the edge as a 415.
+func TestSniffContentType(t *testing.T) {
+	cases := map[string][]byte{
+		"image/png":  pngBytes(t),
+		"image/jpeg": {0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 'J', 'F', 'I', 'F'},
+		// Go's sniffer reports TIFF as octet-stream, so both byte orders are matched by hand.
+		"image/tiff": {0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00},
+	}
+	for want, data := range cases {
+		if got := sniffContentType(data); got != want {
+			t.Errorf("sniffContentType(%s) = %q, want %q", want, got, want)
+		}
+		if !acceptedTypes[want] {
+			t.Errorf("%s is sniffed but not accepted", want)
+		}
+	}
+	if got := sniffContentType([]byte{0x4D, 0x4D, 0x00, 0x2A, 0, 0, 0, 8}); got != "image/tiff" {
+		t.Errorf("big-endian TIFF sniffed as %q", got)
+	}
+	// Short input must not panic or be mistaken for an image.
+	if acceptedTypes[sniffContentType([]byte{0x49})] {
+		t.Error("a single byte was accepted as an image")
 	}
 }
 

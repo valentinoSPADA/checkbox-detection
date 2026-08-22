@@ -139,128 +139,7 @@ func TestMaxDetectionsTruncatesRanked(t *testing.T) {
 // rather than whatever the tuned defaults happen to be this week. DefaultPolicy's own
 // values are asserted separately, in TestDefaultPolicyInvariants.
 func escalationPolicy() Policy {
-	return Policy{MinConfidence: 0.9, IoUThreshold: 0.3, EscalateAbove: 0.35,
-		EscalateBelow: 0.85, MaxEscalations: 40}
-}
-
-func TestSelectForEscalationPicksOnlyTheBand(t *testing.T) {
-	p := escalationPolicy() // band is (0.35, 0.85)
-	got := p.SelectForEscalation([]Detection{
-		det(0, 0, 10, 10, 0.99, true),   // confidently right: no information to gain
-		det(20, 0, 30, 10, 0.10, false), // confidently negative: asking again is waste
-		det(40, 0, 50, 10, 0.55, false), // uncertain
-		det(60, 0, 70, 10, 0.80, true),  // uncertain
-	})
-	if len(got) != 2 {
-		t.Fatalf("selected %d, want 2: %+v", len(got), got)
-	}
-	for _, d := range got {
-		if d.Confidence <= p.EscalateAbove || d.Confidence >= p.EscalateBelow {
-			t.Fatalf("selected a candidate outside the band: %+v", d)
-		}
-	}
-}
-
-func TestSelectForEscalationOrdersMostUncertainFirst(t *testing.T) {
-	// Truncation at MaxEscalations must spend the budget on the least certain candidates,
-	// not on whichever happened to be scanned first.
-	p := escalationPolicy()
-	p.MaxEscalations = 2
-	mid := (p.EscalateAbove + p.EscalateBelow) / 2 // 0.60
-	got := p.SelectForEscalation([]Detection{
-		det(0, 0, 10, 10, 0.84, true),
-		det(20, 0, 30, 10, 0.61, false), // closest to the midpoint
-		det(40, 0, 50, 10, 0.58, false), // second closest
-		det(60, 0, 70, 10, 0.36, true),
-	})
-	if len(got) != 2 {
-		t.Fatalf("selected %d, want 2", len(got))
-	}
-	d0, d1 := abs(got[0].Confidence-mid), abs(got[1].Confidence-mid)
-	if d0 > d1 {
-		t.Fatalf("candidates not ordered by uncertainty: %v then %v", got[0].Confidence, got[1].Confidence)
-	}
-	if got[0].Confidence != 0.61 {
-		t.Fatalf("most uncertain candidate not selected first: %+v", got)
-	}
-}
-
-func TestSelectForEscalationDisabled(t *testing.T) {
-	p := escalationPolicy()
-	p.MaxEscalations = 0
-	got := p.SelectForEscalation([]Detection{det(0, 0, 10, 10, 0.5, false)})
-	if len(got) != 0 {
-		t.Fatalf("escalation disabled but selected %d", len(got))
-	}
-	if got == nil {
-		t.Fatal("want an empty slice, not nil")
-	}
-}
-
-func TestSelectForEscalationSkipsDegenerate(t *testing.T) {
-	p := escalationPolicy()
-	got := p.SelectForEscalation([]Detection{det(10, 10, 10, 10, 0.5, false)})
-	if len(got) != 0 {
-		t.Fatalf("degenerate box selected for a paid call: %+v", got)
-	}
-}
-
-func TestMergeReplacesOverlappingAndAppendsNew(t *testing.T) {
-	p := Policy{IoUThreshold: 0.3}
-	base := []Detection{
-		det(0, 0, 20, 20, 0.5, false), // will be corrected
-		det(50, 0, 70, 20, 0.9, true), // untouched
-	}
-	overrides := []Detection{
-		{Box: Box{1, 1, 21, 21}, Confidence: 0.95, IsChecked: true, Source: EngineVLM},    // overlaps base[0]
-		{Box: Box{100, 0, 120, 20}, Confidence: 0.9, IsChecked: false, Source: EngineVLM}, // new find
-	}
-	got := p.Merge(base, overrides)
-	if len(got) != 3 {
-		t.Fatalf("merged to %d detections, want 3: %+v", len(got), got)
-	}
-	if !got[0].IsChecked || got[0].Source != EngineVLM {
-		t.Fatalf("override did not replace the base detection: %+v", got[0])
-	}
-	if got[1].Source != EngineLocal {
-		t.Fatalf("non-overlapping base detection was altered: %+v", got[1])
-	}
-}
-
-func TestMergeConsumesEachOverrideOnce(t *testing.T) {
-	// Two base boxes overlapping one override must not both be replaced by it, or a single
-	// second opinion would duplicate itself across neighbours.
-	p := Policy{IoUThreshold: 0.1}
-	base := []Detection{det(0, 0, 20, 20, 0.5, false), det(2, 2, 22, 22, 0.5, false)}
-	overrides := []Detection{{Box: Box{1, 1, 21, 21}, Confidence: 0.95, IsChecked: true, Source: EngineVLM}}
-	got := p.Merge(base, overrides)
-	vlmCount := 0
-	for _, d := range got {
-		if d.Source == EngineVLM {
-			vlmCount++
-		}
-	}
-	if vlmCount != 1 {
-		t.Fatalf("override applied %d times, want 1: %+v", vlmCount, got)
-	}
-}
-
-func TestMergeWithNoOverridesIsIdentity(t *testing.T) {
-	p := Policy{IoUThreshold: 0.3}
-	base := []Detection{det(0, 0, 20, 20, 0.5, false)}
-	got := p.Merge(base, nil)
-	if len(got) != 1 || got[0] != base[0] {
-		t.Fatalf("Merge with no overrides changed the base: %+v", got)
-	}
-}
-
-func TestMergeIgnoresDegenerateOverrides(t *testing.T) {
-	p := Policy{IoUThreshold: 0.3}
-	base := []Detection{det(0, 0, 20, 20, 0.5, false)}
-	got := p.Merge(base, []Detection{{Box: Box{5, 5, 5, 5}, Confidence: 0.99, Source: EngineVLM}})
-	if len(got) != 1 || got[0].Source != EngineLocal {
-		t.Fatalf("a degenerate override was applied: %+v", got)
-	}
+	return Policy{MinConfidence: 0.9, IoUThreshold: 0.3}
 }
 
 // TestDomainHasNoOutboundDependencies enforces the hexagonal boundary structurally rather
@@ -305,83 +184,37 @@ func TestDomainHasNoOutboundDependencies(t *testing.T) {
 
 // TestDefaultPolicyInvariants guards the shipped tuning rather than the logic.
 //
-// The escalation band must overlap the region *below* MinConfidence: if it sat entirely
-// above the floor, escalation would only ever re-confirm detections that were already being
-// returned, spending money to change nothing. That is a silent failure -- the assisted
-// engine would still report itself as assisted -- so it is asserted rather than trusted.
+// Both bounds are exclusive on purpose. A MinConfidence of exactly 1 returns nothing on every
+// page -- and label smoothing already caps this model's softmax near 0.98, so it is reachable
+// by a plausible typo rather than an absurd one. An IoUThreshold of 0 suppresses every box
+// that touches another, which on a form whose checkboxes sit in adjacent cells deletes most
+// of the answer.
 func TestDefaultPolicyInvariants(t *testing.T) {
 	p := DefaultPolicy()
 	if p.MinConfidence <= 0 || p.MinConfidence >= 1 {
 		t.Fatalf("MinConfidence %v is outside (0,1)", p.MinConfidence)
-	}
-	if p.EscalateAbove >= p.EscalateBelow {
-		t.Fatalf("escalation band is empty: (%v, %v)", p.EscalateAbove, p.EscalateBelow)
-	}
-	if p.EscalateAbove >= p.MinConfidence {
-		t.Fatalf("escalation band starts at %v, at or above the %v floor: escalation could "+
-			"only re-confirm detections that are already returned",
-			p.EscalateAbove, p.MinConfidence)
 	}
 	if p.IoUThreshold <= 0 || p.IoUThreshold >= 1 {
 		t.Fatalf("IoUThreshold %v is outside (0,1)", p.IoUThreshold)
 	}
 }
 
+// TestFloorForFallsBackToTheDefault covers a mechanism the shipped policy does not currently
+// use: with one engine registered, SourceMinConfidence is nil. It is tested anyway, because
+// the day a second engine is added is the day someone discovers whether per-source floors
+// work -- and the last time two engines shared one floor, every verdict from the second was
+// silently discarded.
 func TestFloorForFallsBackToTheDefault(t *testing.T) {
-	p := Policy{MinConfidence: 0.9, SourceMinConfidence: map[EngineName]float64{EngineVLM: 0.5}}
-	if got := p.FloorFor(EngineVLM); got != 0.5 {
-		t.Fatalf("FloorFor(vlm) = %v, want 0.5", got)
+	const other = EngineName("second-engine")
+	p := Policy{MinConfidence: 0.9, SourceMinConfidence: map[EngineName]float64{other: 0.5}}
+	if got := p.FloorFor(other); got != 0.5 {
+		t.Fatalf("FloorFor(second-engine) = %v, want 0.5", got)
 	}
 	if got := p.FloorFor(EngineLocal); got != 0.9 {
 		t.Fatalf("FloorFor(local) = %v, want the default 0.9", got)
 	}
-	// An engine added later must inherit the default bar, not escape thresholding entirely.
+	// An engine with no entry must inherit the default bar, not escape thresholding entirely.
 	if got := p.FloorFor(EngineName("future-engine")); got != 0.9 {
 		t.Fatalf("FloorFor(unknown) = %v, want the default 0.9", got)
-	}
-}
-
-// TestApplyUsesPerSourceFloors covers the bug this field was added for: under one shared
-// floor of 0.95, a Claude verdict returned at 0.90 -- a strong signal from a stronger model --
-// was discarded, so every escalated candidate was paid for and then thrown away.
-func TestApplyUsesPerSourceFloors(t *testing.T) {
-	p := Policy{
-		MinConfidence:       0.95,
-		IoUThreshold:        0.3,
-		SourceMinConfidence: map[EngineName]float64{EngineVLM: 0.5},
-	}
-	got := p.Apply([]Detection{
-		{Box: Box{0, 0, 20, 20}, Confidence: 0.90, Source: EngineVLM},     // kept: vlm floor
-		{Box: Box{40, 0, 60, 20}, Confidence: 0.90, Source: EngineLocal},  // dropped: local floor
-		{Box: Box{80, 0, 100, 20}, Confidence: 0.96, Source: EngineLocal}, // kept
-	})
-	if len(got) != 2 {
-		t.Fatalf("kept %d, want 2: %+v", len(got), got)
-	}
-	sources := map[EngineName]bool{}
-	for _, d := range got {
-		sources[d.Source] = true
-	}
-	if !sources[EngineVLM] || !sources[EngineLocal] {
-		t.Fatalf("expected one detection from each engine, got %+v", got)
-	}
-}
-
-// TestDefaultPolicyEscalationCanActuallyPromote guards the whole point of the assisted
-// engine. If the VLM floor were ever raised to the local floor, escalation would become a
-// pure cost with no possible effect on the response -- and nothing else in the suite would
-// notice, because the engine would still return a plausible answer.
-func TestDefaultPolicyEscalationCanActuallyPromote(t *testing.T) {
-	p := DefaultPolicy()
-	// A candidate the local model is unsure about, which escalation should be able to rescue.
-	uncertain := Detection{Box: Box{0, 0, 20, 20}, Confidence: 0.85, Source: EngineLocal}
-	if len(p.SelectForEscalation([]Detection{uncertain})) != 1 {
-		t.Fatal("a candidate inside the band was not selected for escalation")
-	}
-	// The same box, adjudicated by the vision model at its typical certainty, must survive.
-	adjudicated := Detection{Box: Box{0, 0, 20, 20}, Confidence: 0.90, Source: EngineVLM}
-	if len(p.Apply([]Detection{adjudicated})) != 1 {
-		t.Fatalf("an adjudicated verdict at %v was dropped by the %v floor: escalation "+
-			"cannot change any answer", adjudicated.Confidence, p.FloorFor(EngineVLM))
 	}
 }

@@ -247,43 +247,6 @@ input[type='range'] {
 
 /* ── Segmented control ───────────────────────────────────────────────────── */
 
-.segmented {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  gap: 4px;
-  padding: 4px;
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-
-.segmented__item {
-  padding: 8px 6px;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 500;
-  transition:
-    background 120ms ease,
-    color 120ms ease;
-}
-.segmented__item:hover:not(:disabled) {
-  color: var(--text);
-}
-.segmented__item[aria-checked='true'] {
-  background: var(--surface);
-  color: var(--accent);
-  font-weight: 600;
-  box-shadow: var(--shadow);
-}
-.segmented__item:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
 
 .btn {
@@ -615,38 +578,102 @@ input[type='range'] {
   color: #71717a;
 }
 
-/* ── Status ──────────────────────────────────────────────────────────────── */
+/* ── Loading ─────────────────────────────────────────────────────────────── */
 
-.status {
+/*
+ * Skeletons rather than a spinner.
+ *
+ * A spinner says only "wait"; a skeleton says "wait, and here is the shape of what is
+ * coming", so the layout does not jump when the result lands. That matters here because the
+ * result is tall — a stats row plus a page image — and a small spinner in the middle of an
+ * empty column made the whole viewer reflow on arrival.
+ *
+ * The shimmer is a moving gradient over a flat base, so a skeleton reads as pending rather
+ * than as an empty card that failed to fill.
+ */
+.skeleton {
+  background: var(--surface-2, #f1f5f9);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 100%
+  );
+  background-size: 220px 100%;
+  background-repeat: no-repeat;
+  border-radius: 6px;
+  animation: shimmer 1.25s ease-in-out infinite;
+}
+
+:root[data-theme='dark'] .skeleton,
+:root:not([data-theme='light']) .skeleton {
+  background-color: #2f2f35;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) .skeleton {
+    background-color: #f1f5f9;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -220px 0;
+  }
+  to {
+    background-position: calc(100% + 220px) 0;
+  }
+}
+
+.skeleton--page {
+  width: 100%;
+  height: 420px;
+  border-radius: 8px;
+}
+
+.skeleton--line {
+  height: 11px;
+}
+
+/* ── Progress ────────────────────────────────────────────────────────────── */
+
+/*
+ * The backend reports no progress, so this bar is honest about being an estimate: it eases
+ * towards a ceiling short of 100% and only completes when the response actually lands. A bar
+ * that reaches 100% and then sits there is worse than no bar, because it reports a finish
+ * that has not happened.
+ */
+.progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.progress__fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: inherit;
+  transition: width 220ms ease-out;
+}
+
+.progress__label {
   display: flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 13px;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12px;
   color: var(--muted);
 }
 
-.spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--border-strong);
-  border-top-color: var(--accent);
-  border-radius: 999px;
-  animation: spin 700ms linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation-duration: 2s;
+  .skeleton {
+    animation: none;
+  }
+  .progress__fill {
+    transition: none;
   }
   body,
   .btn,
-  .segmented__item,
   .drop {
     transition: none;
   }

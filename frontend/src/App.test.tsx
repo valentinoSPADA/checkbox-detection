@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import App from './App'
 
 /**
- * These tests exist for one reason: detection costs money on two of the three engines, so
- * "nothing is sent until the user asks" is a behavioural guarantee, not a UI preference.
- * An earlier version fired a request on file selection *and* on every engine change, which
- * meant trying two engines on one page spent three calls, two of them unrequested.
+ * "Nothing is sent until the user asks" is a behavioural guarantee, not a UI preference, and
+ * these tests are what hold it. It was written when two of the three engines billed per page;
+ * those engines are gone and the rule outlived them, because an auto-run still means a request
+ * the user did not ask for and several seconds of CPU they did not want to spend.
  */
 
 function stubFetch(detectBody: unknown = { boxes: [], meta: emptyMeta() }) {
@@ -23,11 +23,6 @@ function stubFetch(detectBody: unknown = { boxes: [], meta: emptyMeta() }) {
 
 function emptyMeta() {
   return { engine: 'local', width: 100, height: 100, elapsed_ms: 5, stats: { candidates: 0, returned: 0 } }
-}
-
-/** The engine picker is a segmented radiogroup, so selection is a click, not a change. */
-function pickEngine(label: string) {
-  fireEvent.click(screen.getByRole('radio', { name: label }))
 }
 
 function pickFile(name = 'page.png') {
@@ -71,16 +66,6 @@ describe('detection is explicit', () => {
     expect(screen.getByText(/nothing has been sent to the API yet/i)).toBeDefined()
   })
 
-  it('sends nothing when the engine changes', async () => {
-    const fetchMock = stubFetch()
-    render(<App />)
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
-
-    pickFile()
-    pickEngine('Claude vision')
-
-    expect(detectCalls(fetchMock)).toHaveLength(0)
-  })
 
   it('sends exactly one request when Detect is pressed', async () => {
     const fetchMock = stubFetch()
@@ -103,34 +88,7 @@ describe('detection is explicit', () => {
     expect(button.disabled).toBe(false)
   })
 
-  it('warns that a shown result came from a different engine', async () => {
-    const fetchMock = stubFetch()
-    render(<App />)
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
 
-    pickFile()
-    fireEvent.click(screen.getByRole('button', { name: /detect/i }))
-    await waitFor(() => expect(detectCalls(fetchMock)).toHaveLength(1))
-
-    pickEngine('Assisted')
-
-    // Silently relabelling the on-screen result as the newly-selected engine would be a
-    // small lie with real consequences: it is the comparison the whole UI exists to support.
-    await waitFor(() =>
-      expect(screen.getByText(/Showing the previous result/i)).toBeDefined(),
-    )
-    expect(detectCalls(fetchMock)).toHaveLength(1)
-  })
-
-  it('warns that the selected engine costs money', async () => {
-    const fetchMock = stubFetch()
-    render(<App />)
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
-
-    expect(screen.queryByText(/costs money per run/i)).toBeNull()
-    pickEngine('Claude vision')
-    expect(screen.getByText(/costs money per run/i)).toBeDefined()
-  })
 })
 
 describe('theme', () => {
@@ -246,5 +204,126 @@ describe('lightbox', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /close/i }))
     await waitFor(() => expect(document.body.style.overflow).not.toBe('hidden'))
+  })
+})
+
+describe('loading state', () => {
+  /** A detect call that never settles, so the pending UI can be inspected. */
+  function stubHangingDetect() {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).includes('/engines')) {
+        return { ok: true, status: 200, json: async () => ({ engines: ['local'], default: 'local' }) } as Response
+      }
+      return new Promise<Response>(() => {})
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    return fetchMock
+  }
+
+  it('shows a skeleton of the result rather than a bare spinner', async () => {
+    // The point of the skeleton is that it reserves the result's geometry, so the viewer does
+    // not reflow when the response lands. Assert the shape, not the animation.
+    const fetchMock = stubHangingDetect()
+    render(<App />)
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+    pickFile()
+    fireEvent.click(screen.getByRole('button', { name: /^detect$/i }))
+
+    const status = await screen.findByRole('status')
+    expect(status.querySelectorAll('.skeleton').length).toBeGreaterThan(5)
+    expect(status.querySelector('.skeleton--page')).not.toBeNull()
+    expect(status.getAttribute('aria-busy')).toBe('true')
+  })
+
+  it('advances the progress bar while waiting', async () => {
+    vi.useFakeTimers()
+    try {
+      stubHangingDetect()
+      render(<App />)
+      pickFile()
+      fireEvent.click(screen.getByRole('button', { name: /^detect$/i }))
+
+      const width = () =>
+        parseFloat((document.querySelector('.progress__fill') as HTMLElement).style.width)
+      await act(async () => {
+        vi.advanceTimersByTime(500)
+      })
+      const early = width()
+      await act(async () => {
+        vi.advanceTimersByTime(4000)
+      })
+      expect(width()).toBeGreaterThan(early)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('never lets the estimate claim completion', async () => {
+    // A bar that reaches 100% and sits there reports a finish that has not happened. The
+    // last movement must be caused by the response actually arriving.
+    vi.useFakeTimers()
+    try {
+      stubHangingDetect()
+      render(<App />)
+      pickFile()
+      fireEvent.click(screen.getByRole('button', { name: /^detect$/i }))
+      await act(async () => {
+        vi.advanceTimersByTime(10 * 60 * 1000)
+      })
+      const width = parseFloat(
+        (document.querySelector('.progress__fill') as HTMLElement).style.width,
+      )
+      expect(width).toBeLessThan(100)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
+describe('upload guards', () => {
+  /** Attach a file of a given size and MIME type without allocating its bytes. */
+  function pickSized(name: string, size: number, type: string) {
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement
+    const file = new File(['x'], name, { type })
+    Object.defineProperty(file, 'size', { value: size })
+    fireEvent.change(input, { target: { files: [file] } })
+  }
+
+  it('refuses an oversized file without contacting the API', async () => {
+    // The server enforces this too; rejecting here saves the user a long upload that can only
+    // end in a 413.
+    const fetchMock = stubFetch()
+    render(<App />)
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+
+    pickSized('huge.png', 40 * 1024 * 1024, 'image/png')
+
+    expect(await screen.findByText(/the limit is 25 MB/i)).toBeDefined()
+    expect(detectCalls(fetchMock)).toHaveLength(0)
+    expect((screen.getByRole('button', { name: /detect/i }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('refuses a file whose type the sidecar cannot decode', async () => {
+    const fetchMock = stubFetch()
+    render(<App />)
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+
+    pickSized('report.pdf', 1024, 'application/pdf')
+
+    expect(await screen.findByText(/expected a PNG, JPEG, WEBP or TIFF/i)).toBeDefined()
+    expect(detectCalls(fetchMock)).toHaveLength(0)
+  })
+
+  it('accepts a file the browser reports no type for', async () => {
+    // Some browsers report an empty type for a dragged file. Guessing here would block a
+    // valid upload to enforce a check the server does properly, on the bytes.
+    const fetchMock = stubFetch()
+    render(<App />)
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+
+    pickSized('scan', 2048, '')
+
+    expect(screen.queryByText(/Expected a PNG/i)).toBeNull()
+    expect((screen.getByRole('button', { name: /detect/i }) as HTMLButtonElement).disabled).toBe(false)
   })
 })

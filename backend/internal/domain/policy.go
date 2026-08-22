@@ -4,43 +4,29 @@ import "sort"
 
 // Policy is the decision layer applied to raw candidates from any engine.
 //
-// It lives in Go rather than in the Python sidecar on purpose. Suppression, thresholding and
-// escalation are business decisions with cost consequences -- escalation in particular spends
-// real money per call -- and pushing them into the sidecar would leave the Go service a
-// transparent proxy with no logic worth testing. Keeping them here also means the same rules
-// apply identically to sidecar output and to language-model output, which is what makes the
-// two engines comparable at all.
+// It lives in Go rather than in the Python sidecar on purpose. Which candidates survive, how
+// overlaps are resolved and how many detections a caller receives are product decisions, not
+// image processing; pushing them into the sidecar would leave the Go service a transparent
+// proxy with no logic worth testing, and would put the rules that define the API's contract
+// in the component least able to state them.
+//
+// It is also what keeps the Detector port meaningful: an engine returns evidence, and the
+// same rules are applied to it whichever engine produced it.
 type Policy struct {
 	// MinConfidence is the floor a candidate must clear to be returned.
 	MinConfidence float64
-	// SourceMinConfidence overrides that floor per producing engine.
+	// SourceMinConfidence overrides that floor for a named engine.
 	//
-	// Confidences from different engines are not on the same scale, and treating them as if
-	// they were is a category error with a concrete cost. The local classifier is a
-	// synthetic-trained softmax whose useful signal lives above 0.95; Claude reports a
-	// self-assessed certainty that clusters near 0.9 even when it is sure. Under one shared
-	// floor of 0.95, every escalated verdict was silently discarded -- the assisted engine
-	// paid for model calls that could not change the answer by construction.
+	// Empty today: one engine ships, so one floor applies. It is kept because the reason it
+	// exists is structural rather than incidental -- confidences from different producers are
+	// not on the same scale, and the moment a second engine is registered, holding both to one
+	// number is a category error. That was measured once already, with a shared 0.95 floor
+	// silently discarding every verdict from an engine whose scores clustered near 0.9.
 	SourceMinConfidence map[EngineName]float64
 	// IoUThreshold is the overlap above which the weaker of two candidates is suppressed.
 	IoUThreshold float64
 	// MaxDetections caps the response size; 0 means unlimited.
 	MaxDetections int
-	// EscalateBelow and EscalateAbove bound the uncertainty band whose members are worth a
-	// second opinion from a more expensive engine.
-	EscalateBelow float64
-	EscalateAbove float64
-	// MaxEscalations caps how many candidates a single request may escalate, bounding both
-	// latency and spend.
-	//
-	// Measured on the four samples, the number of candidates inside the uncertainty band is
-	// 57, 136, 146 and 448. A flat cap therefore allocates help in inverse proportion to how
-	// much a page needs it: at 40 the clean page got 70% coverage and the watermarked page --
-	// the one with the worst recall -- got 9%, which is why assisted output was nearly
-	// identical to local. The cap is still flat, because per-page adaptive budgeting is a
-	// spend-control policy that belongs to whoever pays the bill, but it is now set where it
-	// covers most pages rather than almost none.
-	MaxEscalations int
 }
 
 // DefaultPolicy returns the tuned defaults used by the service.
@@ -68,24 +54,14 @@ type Policy struct {
 //
 // Note the ceiling: label smoothing of 0.05 during training caps the softmax near 0.98, so a
 // floor of 0.99 returns nothing at all. Anything above ~0.97 is off the usable scale.
-//
-// The escalation band deliberately spans the region just below the floor, so escalation can
-// recover detections the floor would otherwise drop rather than merely re-confirming ones it
-// already keeps.
 func DefaultPolicy() Policy {
 	return Policy{
-		MinConfidence:  0.90,
-		IoUThreshold:   0.30,
-		MaxDetections:  0,
-		EscalateBelow:  0.92,
-		EscalateAbove:  0.70,
-		MaxEscalations: 120,
-		SourceMinConfidence: map[EngineName]float64{
-			// Claude's self-reported certainty is not the local model's softmax and must
-			// not be held to the same bar; a verdict it returns at 0.9 is a stronger signal
-			// than the local classifier at 0.9, not a weaker one.
-			EngineVLM: 0.50,
-		},
+		MinConfidence: 0.90,
+		IoUThreshold:  0.30,
+		MaxDetections: 0,
+		// No per-source overrides while one engine ships. See the field's comment for why the
+		// mechanism stays.
+		SourceMinConfidence: nil,
 	}
 }
 
@@ -171,86 +147,4 @@ func (p Policy) Suppress(candidates []Detection) []Detection {
 		}
 	}
 	return kept
-}
-
-// SelectForEscalation picks the candidates worth a second opinion from a costlier engine.
-//
-// The rule is an uncertainty band, not a "worst N" list: a candidate the model is confidently
-// wrong about will not be caught by asking again, and a candidate it is confidently right
-// about is money wasted. Only the middle carries information. Candidates are returned
-// ordered by ascending distance from the band's midpoint -- most uncertain first -- so that
-// truncating at MaxEscalations spends the budget on the least certain cases rather than on
-// whichever happened to be scanned first.
-//
-// Returns an empty slice when escalation is disabled (MaxEscalations <= 0) or when the band
-// is empty, so callers can treat "no escalation" and "nothing uncertain" identically.
-func (p Policy) SelectForEscalation(candidates []Detection) []Detection {
-	if p.MaxEscalations <= 0 {
-		return []Detection{}
-	}
-	band := make([]Detection, 0, len(candidates))
-	for _, d := range candidates {
-		if !d.Box.Valid() {
-			continue
-		}
-		if d.Confidence > p.EscalateAbove && d.Confidence < p.EscalateBelow {
-			band = append(band, d)
-		}
-	}
-	mid := (p.EscalateAbove + p.EscalateBelow) / 2
-	sort.SliceStable(band, func(i, j int) bool {
-		return abs(band[i].Confidence-mid) < abs(band[j].Confidence-mid)
-	})
-	if len(band) > p.MaxEscalations {
-		band = band[:p.MaxEscalations]
-	}
-	return band
-}
-
-// Merge folds a second engine's verdicts back over a base set of detections.
-//
-// Used by the assisted engine: overrides carry the escalated answers, base carries everything
-// the local engine produced. An override replaces the base detection it overlaps with, rather
-// than being appended, so that a second opinion corrects a box instead of duplicating it; an
-// override that matches nothing is added, because the costlier engine is allowed to find what
-// the cheaper one missed entirely.
-//
-// Overlap is decided by IoU against the same threshold used for suppression, so "these are
-// the same checkbox" means one thing throughout the system.
-func (p Policy) Merge(base, overrides []Detection) []Detection {
-	if len(overrides) == 0 {
-		return base
-	}
-	out := make([]Detection, 0, len(base)+len(overrides))
-	consumed := make([]bool, len(overrides))
-	for _, b := range base {
-		replaced := false
-		for i, o := range overrides {
-			if consumed[i] || !o.Box.Valid() {
-				continue
-			}
-			if b.Box.IoU(o.Box) > p.IoUThreshold {
-				out = append(out, o)
-				consumed[i] = true
-				replaced = true
-				break
-			}
-		}
-		if !replaced {
-			out = append(out, b)
-		}
-	}
-	for i, o := range overrides {
-		if !consumed[i] && o.Box.Valid() {
-			out = append(out, o)
-		}
-	}
-	return out
-}
-
-func abs(f float64) float64 {
-	if f < 0 {
-		return -f
-	}
-	return f
 }

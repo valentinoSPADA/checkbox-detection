@@ -12,7 +12,13 @@ import cv2
 import numpy as np
 import pytest
 
-from engine.preprocess import binarize, crop_with_context, decode, mark_candidate, to_gray
+from engine.preprocess import (
+    binarize,
+    crop_with_context,
+    decode,
+    mark_candidate,
+    to_gray,
+)
 from engine.proposals import (
     MAX_SIDE,
     MAX_SIDE_FLOOR,
@@ -167,11 +173,13 @@ class TestPreprocess:
             decode(b"this is definitely not a png")
 
     def test_decode_roundtrips_png(self):
-        img = page(40, 30)
+        # Above MIN_SIDE_PX: decode now enforces a floor, so a 40x30 fixture -- which this
+        # test used before that existed -- is a rejected input rather than a decode failure.
+        img = page(64, 48)
         ok, buf = cv2.imencode(".png", img)
         assert ok
         got = decode(buf.tobytes())
-        assert got.shape[:2] == (30, 40)
+        assert got.shape[:2] == (48, 64)
 
     def test_to_gray_passes_through_single_channel(self):
         g = page(10, 10)
@@ -464,3 +472,41 @@ class TestWeightsAreNotRows:
         assert len(d["labels"]) == len(labels), "rows must not be duplicated in the file"
         assert "weights" in d.files, "the repeat count must travel as a weight"
         assert (d["weights"] == 4).all()
+
+
+class TestDecodeBounds:
+    """Size limits at the decode boundary.
+
+    A byte limit at the gateway cannot bound memory here: compression ratio is attacker-chosen,
+    so a small upload can decode to an arbitrarily large array. These are the checks that make
+    the sidecar's memory a function of its own configuration rather than of the caller's file.
+    """
+
+    def _png(self, w: int, h: int) -> bytes:
+        ok, buf = cv2.imencode(".png", np.full((h, w, 3), 255, np.uint8))
+        assert ok
+        return buf.tobytes()
+
+    def test_a_normal_page_decodes(self):
+        img = decode(self._png(400, 600))
+        assert img.shape[:2] == (600, 400)
+
+    def test_undecodable_bytes_are_rejected(self):
+        with pytest.raises(ValueError, match="not a decodable image"):
+            decode(b"this is not an image")
+
+    def test_a_page_over_the_pixel_limit_is_rejected(self, monkeypatch):
+        # Built small and the limit lowered, rather than allocating a real bomb in a test.
+        monkeypatch.setattr("engine.preprocess.MAX_PIXELS", 1000)
+        with pytest.raises(ValueError, match="MP"):
+            decode(self._png(100, 100))
+
+    def test_a_degenerate_strip_is_rejected(self):
+        # A 1 px tall image reaches code that assumes a page; the error must name the reason.
+        with pytest.raises(ValueError, match="at least"):
+            decode(self._png(400, 1))
+
+    def test_the_error_reports_the_actual_size(self):
+        # An operator tuning the limit needs to know what was sent, not only that it was big.
+        with pytest.raises(ValueError, match=r"400x1"):
+            decode(self._png(400, 1))

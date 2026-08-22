@@ -1,9 +1,9 @@
 // Command api is the public HTTP entrypoint for checkbox detection.
 //
 // It is the composition root and the only place in the program that knows which concrete
-// adapters exist. Everything below it depends on the domain.Detector port, which is what
-// allows the local pipeline, the vision model and the assisted combination to be swapped by
-// a query parameter without any of them knowing the others exist.
+// adapters exist. Everything below it depends on the domain.Detector port, so which engines
+// a build ships is a decision made here and nowhere else -- adding or removing one touches
+// this file and the engines map, not the handler, the policy or the domain.
 package main
 
 import (
@@ -15,9 +15,7 @@ import (
 	"time"
 
 	"github.com/vspada/checkbox-detection/backend/internal/config"
-	"github.com/vspada/checkbox-detection/backend/internal/detector/assisted"
 	"github.com/vspada/checkbox-detection/backend/internal/detector/localengine"
-	"github.com/vspada/checkbox-detection/backend/internal/detector/vlm"
 	"github.com/vspada/checkbox-detection/backend/internal/domain"
 	"github.com/vspada/checkbox-detection/backend/internal/httpapi"
 	"github.com/vspada/checkbox-detection/backend/internal/observability"
@@ -50,28 +48,14 @@ func run() error {
 	log := observability.NewLogger(cfg.LogLevel)
 	slog.SetDefault(log)
 
+	// One engine. Two more existed here -- a vision model reading the page directly, and a
+	// hybrid that escalated the local pipeline's uncertain candidates to it -- and both were
+	// removed after measurement: a language model returns plausible box sizes at approximate
+	// positions rather than measured ones, which is a worse answer than the geometry gives
+	// for free, and it costs money per page. The reasoning and the numbers are kept in
+	// DESIGN.md as a rejected alternative rather than as dead code.
 	local := localengine.New(cfg.DetectorURL, cfg.DetectorTimeout)
 	engines := map[domain.EngineName]domain.Detector{domain.EngineLocal: local}
-
-	// The vision engines are registered only when a key is present. Registering them
-	// unconditionally would let a caller select an engine that fails on every request; this
-	// way /engines reports the truth and an unavailable engine yields a clear 400.
-	if cfg.VLMEnabled() {
-		vision, verr := vlm.New(vlm.Config{
-			APIKey:      cfg.AnthropicAPIKey,
-			Model:       cfg.AnthropicModel,
-			MaxImageDim: cfg.VLMMaxImageDim,
-			BatchSize:   cfg.VLMBatchSize,
-		})
-		if verr != nil {
-			return verr
-		}
-		engines[domain.EngineVLM] = vision
-		engines[domain.EngineAssisted] = assisted.New(local, vision, cfg.Policy, 3.0, log)
-		log.Info("vision engines enabled", slog.String("model", cfg.AnthropicModel))
-	} else {
-		log.Info("vision engines disabled: ANTHROPIC_API_KEY is not set")
-	}
 
 	srv := httpapi.New(httpapi.Options{
 		Engines:       engines,
@@ -93,8 +77,9 @@ func run() error {
 		},
 	})
 
-	// Signal handling exists so that an in-flight page -- which for the vlm engine can be
-	// a minute of paid model calls -- is not discarded by a rolling deploy.
+	// Signal handling exists so that an in-flight page is finished rather than discarded by
+	// a rolling deploy: detection is seconds of CPU, and dropping it mid-flight turns a
+	// routine restart into a failed request for whoever was waiting.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 

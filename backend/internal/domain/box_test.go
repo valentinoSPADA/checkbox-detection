@@ -116,8 +116,8 @@ func TestParseEngine(t *testing.T) {
 	}{
 		{"", EngineLocal, false},
 		{"local", EngineLocal, false},
-		{"vlm", EngineVLM, false},
-		{"assisted", EngineAssisted, false},
+		{"vlm", "", true},      // removed engine: must 400, not silently fall back to local
+		{"assisted", "", true}, // silent substitution would misreport which engine ran
 		{"nonsense", "", true},
 		{"LOCAL", "", true}, // case-sensitive on purpose: silent coercion hides typos
 	}

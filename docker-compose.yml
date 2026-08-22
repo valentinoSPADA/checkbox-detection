@@ -22,7 +22,11 @@ services:
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       ORT_THREADS: "1"
-      MAX_UPLOAD_BYTES: "26214400"
+      # Memory guards, enforced at the one place an upload is decoded. A byte limit at the
+      # gateway cannot see these: compression ratio is chosen by the caller.
+      MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-26214400}
+      MAX_IMAGE_PIXELS: ${MAX_IMAGE_PIXELS:-40000000}
+      MIN_IMAGE_SIDE: ${MIN_IMAGE_SIDE:-32}
     restart: unless-stopped
     healthcheck:
       test:
@@ -48,15 +52,11 @@ services:
     environment:
       ADDR: ":8080"
       DETECTOR_URL: "http://detector:8000"
-      # Absent by default. The system is designed to work fully without it -- the local
-      # engine needs no network -- so a reviewer can clone and run with no credentials.
-      # Supplying it registers the vlm and assisted engines.
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5}
       DEFAULT_ENGINE: ${DEFAULT_ENGINE:-local}
       MIN_CONFIDENCE: ${MIN_CONFIDENCE:-0.90}
-      MAX_ESCALATIONS: ${MAX_ESCALATIONS:-120}
-      VLM_BATCH_SIZE: ${VLM_BATCH_SIZE:-20}
+      # Bounds what arrives. What the decoded image costs is bounded in the sidecar, where
+      # the decode happens -- see MAX_IMAGE_PIXELS below.
+      MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-26214400}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
     depends_on:

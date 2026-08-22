@@ -3,11 +3,15 @@
 Detects and classifies checkboxes in appraisal document images, behind the `POST /detect`
 endpoint the challenge specifies.
 
-Three detection engines share one interface: a **local** two-stage pipeline (geometric
-proposals plus a trained CNN), **Claude vision** reading tiled page images directly, and an
-**assisted** mode that runs the local pipeline and escalates only its uncertain candidates to
-Claude. The local engine is the default and needs no credentials, so the system runs fully on
-a clean clone.
+Detection is a **two-stage local pipeline**: geometry proposes every square region that could
+be a checkbox, and a small trained CNN decides which ones are. It runs offline, needs no
+credentials of any kind, and costs nothing per page. The Go service has **zero external
+dependencies**.
+
+Two model-backed engines existed alongside it and were removed after measurement — a language
+model returns plausible box sizes at approximate positions rather than measured ones, which is
+a worse answer than the geometry gives for free. `DESIGN.md` keeps the numbers as a rejected
+alternative; a paid model is still used **offline**, once, to label training data.
 
 - `DESIGN.md` — every architectural decision with its reason, its cost, and the condition
   that would reverse it, plus the measured experiments that drove them.
@@ -34,9 +38,22 @@ curl -X POST -F "file=@samples/sample_1_urar_1004.png" http://localhost:8080/det
 { "boxes": [ { "bbox": [1077, 1399, 1129, 1451], "is_checked": false }, … ] }
 ```
 
-To enable the Claude-backed engines, copy `.env.example` to `.env` and set
-`ANTHROPIC_API_KEY`. Without it, `GET /engines` reports only `local` and asking for another
-engine returns 400 rather than silently running a different one.
+Nothing needs configuring. `.env.example` documents the tunables — the confidence floor and
+the upload limits — and every one has a measured default.
+
+**Upload limits**, at the two layers that can each enforce something the other cannot:
+
+| Limit | Where | Default | Why there |
+|---|---|---|---|
+| Byte size | Go gateway | 25 MB | Bounds the body before it is buffered, using `MaxBytesReader` rather than the caller's `Content-Length`, which is a claim |
+| Content type | Go gateway | PNG, JPEG, WEBP, TIFF | **Sniffed from the bytes**, not read from the multipart header — anything at all can arrive labelled `image/png` |
+| Pixel count | Python sidecar | 40 MP | Compression ratio is attacker-chosen, so a byte limit cannot bound what an image *costs*; enforced where the decode happens |
+| Minimum side | Python sidecar | 32 px | Rejects degenerate inputs before they reach code that assumes a page |
+
+40 MP admits a 600 dpi scan of US Letter (33.7 MP) while refusing the decompression bombs a
+byte limit alone lets through. The sample pages are 10.7 MP. The browser mirrors the first two
+so an oversized file fails instantly instead of after a long upload — that copy is a courtesy,
+not a boundary.
 
 ### Running without Docker
 
@@ -81,7 +98,7 @@ that `main` calls the constructors is a tautology rather than a safeguard.
 
 | Parameter | Default | Meaning |
 |---|---|---|
-| `engine` | `local` | `local`, `vlm`, or `assisted` |
+| `engine` | `local` | `local`. `GET /engines` reports what a build registers; anything else is a 400, never a silent substitution |
 | `min_confidence` | `0.95` | Confidence floor for this request (see below) |
 | `verbose` | `false` | Add confidence, engine attribution and pipeline counters |
 
@@ -127,7 +144,7 @@ and scribbles that overflow the border, and — critically — bordered cells co
 
 ### Policy — in Go, not in the engine
 
-Suppression, thresholding, escalation and merging live in `backend/internal/domain`, applied
+Thresholding, suppression and capping live in `backend/internal/domain`, applied
 identically to every engine's output. That is what makes an accuracy comparison between
 engines meaningful; it also keeps the Go service from degrading into a proxy with no logic
 worth testing.
@@ -212,22 +229,7 @@ Reading these honestly:
   checkboxes on a form this dense — and answered about the marked neighbour. The prompt
   already said to ignore the edges; that could not carry it, because "the centre one" is not
   decidable when boxes tile the region. The fix draws the referent instead of describing it:
-  `imaging.Outline` (Go) and `engine.preprocess.mark_candidate` (Python) ring the candidate in
-  red. This is a **runtime** fix as well as a tooling one — `assisted` adjudicates through the
-  same path and was inheriting the same confusion on every escalated candidate.
-- **Escalation helps once its budget is large enough to matter.** `assisted` gains 1.7 F1
-  points over `local`, and the gain is in *recall* (0.703 → 0.725) at no precision cost —
-  which is the right direction, because recall is what this system is now short of. Per sample
-  its F1 is 0.887 / 0.686 / 0.879 / 0.790.
-
-  It was not always so. With the escalation cap at its original flat 40, `assisted` returned
-  almost exactly what `local` did, and the reason was arithmetic rather than modelling: the
-  number of candidates in the uncertainty band is 57, 136, 146 and 448 across the four
-  samples, so a flat cap gave the clean page 70% coverage and the watermarked page — the one
-  with the worst recall — 9%. Raising the cap to 120 and chunking the adjudication into
-  batches of 20 (a single message asking for 448 verdicts overruns `max_tokens` and returns an
-  unparseable truncated tool call) took assisted from +0.7 F1 to +1.9, and its recall on
-  sample 4 from 0.595 to 0.634. Both are `MAX_ESCALATIONS` and `VLM_BATCH_SIZE`.
+  `engine.preprocess.mark_candidate` rings the candidate in red before the crop is sent.
 
 ### Two caveats that matter more than the numbers
 
@@ -240,9 +242,9 @@ Two consequences follow, and neither is small:
    pool cannot contain a checkbox the detector never proposed. The recall column measures how
    much of what Stage 1 found survives to the response — a real and useful quantity, but a
    more flattering one than recall against independent annotation.
-2. *The `assisted` comparison is not neutral.* The same model that adjudicates at runtime also
-   produced the ground truth, so `assisted` is being graded partly by its own marker. Its
-   improvement over `local` should be read as suggestive, not as a measurement.
+2. *It is measurably wrong in places.* On sample 4 it holds 44 boxes that are not checkboxes,
+   every one exactly 10 px — letter counters a person rejected on sight. This is why
+   `eval/ground_truth_human.json` exists and is the reference the results table uses.
 
 A contact sheet of the adjudications is written to `docs/ground_truth_preview.png` and was
 reviewed by eye before the labels were used, because model-produced labels are of unknown
@@ -292,11 +294,14 @@ useful than a flattering summary.
 - **No page-level consistency constraint.** Every candidate is judged independently, yet on a
   real form every checkbox is nearly the same size and they align into rows. That structure
   is currently unused.
-- **The `vlm` engine is slow and paid**: a page is split into eight tiles and each is a model
-  call. It is a strategy to select deliberately, not a default.
-- **Evaluation rests on a small, semi-automatically annotated ground truth** derived from the
-  four supplied images. Four pages from one document family cannot establish how this
-  generalises.
+- **Three checkbox-shaped table cells survive on sample 3**, all at 0.977 confidence: a cell
+  in a repeated column, immediately left of a real checkbox. Both stages are behaving
+  correctly — it is a 45 px square with four inked sides, and inside the classifier's window a
+  blank cell and a blank checkbox are the same drawing. The evidence that separates them is
+  page-level (the same X position repeating down three rows is a *column*), which is exactly
+  the structure listed above as unused. No threshold removes them.
+- **Four pages from one document family** cannot establish how this generalises, whatever the
+  numbers say.
 
 ---
 
@@ -315,16 +320,24 @@ useful than a flattering summary.
 
 Each tied to a signal in the job description rather than added for its own sake.
 
-- **Three interchangeable engines behind one port**, selectable per request — directly
-  answers *"Bridge the AI Gap: integrate AI services into our core SaaS platform"*. Two-plus
-  real implementations are also what make the hexagonal boundary genuine rather than
-  decorative.
+- **A Detector port with the engine chosen per request** — directly answers *"Bridge the AI
+  Gap: integrate AI services into our core SaaS platform"*. It carried three real
+  implementations and now carries one; **removing two of them touched the composition root
+  and nothing else**, which is a better demonstration that the seam is real than having three
+  was.
 - **A trained model rather than tuned thresholds**, with the training pipeline, the data
   generator and the exported artifact all in the repository and reproducible.
 - **Claude as an annotator, run rather than proposed** (`detector/training/annotate.py`) —
-  1832 real crops labelled, gated against a pixel measurement, mixed into training for a
-  measured +3.9 F1. The expensive model is offline and never in the request path; the dataset
-  is committed so the model retrains without an API key.
+  1832 real crops labelled, every verdict gated against an independent pixel measurement. The
+  expensive model is offline and never in the request path, and the dataset is committed so
+  the model retrains with no credentials.
+- **A hand-labelling tool** (`detector/training/make_labeling_task.py`) — 627 candidates
+  labelled by a person, which is what found the real defect: the classifier sees a fixed
+  40×40 crop and is therefore blind to absolute size, so a 10 px letter counter and a 50 px
+  checkbox arrive identical. No amount of model-generated labelling finds that, because the
+  models share the blind spot.
+- **Upload guards at the layer that can enforce each one** — byte size and sniffed content
+  type at the gateway, pixel bounds where the decode happens.
 - **React + TypeScript overlay viewer** — for a detector, the overlay *is* the demo, and it
   answers the role's opening line about interfaces that let humans act on AI decisions.
 - **Structured JSON logging, `/health` and `/ready` split correctly**, graceful shutdown,
@@ -359,10 +372,11 @@ Each tied to a signal in the job description rather than added for its own sake.
   gives idempotency for retried pages. Terraform modules per service, one workspace per
   environment. Not built here: it would consume the timebox on infrastructure that is not what
   the challenge grades.
-- **Real observability**: OpenTelemetry traces spanning gateway → sidecar → model call, and
-  RED metrics per engine. Escalation spend in particular deserves a metric, since it is the
-  one cost that scales with traffic.
-- **Caching by content hash.** Appraisal pages are re-submitted often; a hash-keyed result
-  cache removes both latency and model spend for repeats.
+- **Real observability**: OpenTelemetry traces spanning gateway → sidecar → inference, and
+  RED metrics per engine. Stage 1's proposal count deserves a metric of its own: it is the
+  input to everything downstream, and a page where it collapses or explodes is the earliest
+  signal that a new document family has arrived.
+- **Caching by content hash.** Appraisal pages are re-submitted often, and detection is
+  seconds of CPU; a hash-keyed cache removes that for every repeat.
 - **Batch endpoint and back-pressure.** A whole loan file is dozens of pages; a batch API with
   a bounded queue would beat dozens of independent requests.

@@ -8,6 +8,8 @@ drift away from what it is asked to score at inference time.
 
 from __future__ import annotations
 
+import os
+
 import cv2
 import numpy as np
 
@@ -19,18 +21,55 @@ _ADAPTIVE_BLOCK = 31  # neighbourhood size, must be odd
 _ADAPTIVE_C = 10  # constant subtracted from the local mean
 
 
-def decode(data: bytes) -> np.ndarray:
-    """Decode raw upload bytes into a BGR image.
+# Bounds on the decoded image, checked at the one place decoding happens.
+#
+# These guard memory, not correctness. A compressed upload says nothing about what it costs
+# to hold: a 25 MB PNG of flat colour decodes to hundreds of megapixels, and the proposal
+# stage then allocates several full-resolution int32 arrays over it -- roughly 8 bytes per
+# pixel on top of the image itself. The byte limit at the gateway cannot see that, because the
+# expansion happens after it.
+#
+# MAX_PIXELS is set to admit a 600 dpi scan of US Letter (5100 x 6600 = 33.7 MP) and of A4,
+# since those are ordinary appraisal-scan resolutions, while refusing the decompression bombs
+# that a byte limit alone lets through. The four sample pages are 10.7 MP.
+#
+# The alternative to refusing an oversized page is downscaling it, which the relative size
+# sweep in proposals.py would tolerate. It is not done here because silently returning boxes
+# in the coordinates of an image the caller did not send is a worse failure than a clear 400.
+MAX_PIXELS = int(os.getenv("MAX_IMAGE_PIXELS", str(40_000_000)))
 
-    Raises ValueError when the bytes are not a decodable image, which is the boundary
-    where a malformed or truncated upload is rejected: everything downstream may then
-    assume a valid array. Returns colour (not grayscale) because the caller may need
-    chroma to reason about shaded backgrounds.
+# Below this there is nothing to detect: a checkbox is ~1-2% of page width, so a page under
+# 32 px cannot contain one at all. Its real job is rejecting degenerate inputs -- a 1x1 pixel
+# or a 0-height strip -- before they reach code that assumes a page.
+MIN_SIDE_PX = int(os.getenv("MIN_IMAGE_SIDE", "32"))
+
+
+def decode(data: bytes) -> np.ndarray:
+    """Decode raw upload bytes into a BGR image, bounded in size.
+
+    Raises ValueError when the bytes are not a decodable image, when the decoded page exceeds
+    MAX_PIXELS, or when either side is under MIN_SIDE_PX. This is the boundary where a
+    malformed, oversized or degenerate upload is rejected: everything downstream may then
+    assume a valid array of a workable size.
+
+    Returns colour (not grayscale) because the caller may need chroma to reason about shaded
+    backgrounds.
     """
     buf = np.frombuffer(data, dtype=np.uint8)
     img = cv2.imdecode(buf, cv2.IMREAD_COLOR)
     if img is None:
         raise ValueError("payload is not a decodable image")
+
+    h, w = img.shape[:2]
+    if h * w > MAX_PIXELS:
+        # The decode has already happened by the time this fires, so it does not prevent the
+        # peak allocation -- it prevents the far larger one the pipeline would make next.
+        raise ValueError(
+            f"image is {w}x{h} ({h * w / 1e6:.1f} MP); the limit is "
+            f"{MAX_PIXELS / 1e6:.0f} MP"
+        )
+    if min(h, w) < MIN_SIDE_PX:
+        raise ValueError(f"image is {w}x{h}; both sides must be at least {MIN_SIDE_PX} px")
     return img
 
 

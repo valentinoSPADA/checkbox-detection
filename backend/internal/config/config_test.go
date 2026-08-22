@@ -35,25 +35,18 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.DefaultEngine != domain.EngineLocal {
 		t.Errorf("DefaultEngine = %q, want local", cfg.DefaultEngine)
 	}
-	if cfg.VLMEnabled() {
-		t.Error("VLMEnabled is true with no API key set")
-	}
 	if cfg.Policy.MinConfidence != domain.DefaultPolicy().MinConfidence {
 		t.Errorf("MinConfidence = %v, want the domain default", cfg.Policy.MinConfidence)
 	}
 }
 
-// TestLoadWithoutAPIKeySucceeds is the requirement that an evaluator can clone the repository
-// and run it with no credentials at all. If a missing key were an error, `docker compose up`
-// would fail on a clean checkout.
-func TestLoadWithoutAPIKeySucceeds(t *testing.T) {
+// TestLoadNeedsNoCredentials is the requirement that an evaluator can clone the repository
+// and run it with nothing configured at all. It outlived the API key it was written for: the
+// service now has no credential of any kind, and this test is what keeps it that way.
+func TestLoadNeedsNoCredentials(t *testing.T) {
 	clearEnv(t)
-	cfg, err := Load()
-	if err != nil {
-		t.Fatalf("Load without an API key must succeed, got: %v", err)
-	}
-	if cfg.VLMEnabled() {
-		t.Error("vision engines reported as enabled without a key")
+	if _, err := Load(); err != nil {
+		t.Fatalf("Load on a bare environment must succeed, got: %v", err)
 	}
 }
 
@@ -121,14 +114,10 @@ func TestValidateRejectsUnusableConfigurations(t *testing.T) {
 		{"zero upload limit", func(c *Config) { c.MaxUploadBytes = 0 }, "MAX_UPLOAD_BYTES"},
 		{"confidence out of range", func(c *Config) { c.Policy.MinConfidence = 7 }, "MIN_CONFIDENCE"},
 		{"iou out of range", func(c *Config) { c.Policy.IoUThreshold = -1 }, "IOU_THRESHOLD"},
-		// An inverted band makes escalation a silent no-op: the assisted engine would keep
-		// reporting itself as assisted while never escalating anything.
-		{"inverted escalation band", func(c *Config) {
-			c.Policy.EscalateAbove, c.Policy.EscalateBelow = 0.9, 0.2
-		}, "ESCALATE_ABOVE"},
-		{"vlm default without a key", func(c *Config) {
-			c.DefaultEngine = domain.EngineVLM
-		}, "ANTHROPIC_API_KEY"},
+		// Both bounds, not just one: a threshold above 1 returns nothing and a threshold
+		// below 0 returns everything, and each looks like a different bug entirely.
+		{"confidence above one", func(c *Config) { c.Policy.MinConfidence = 1.5 }, "MIN_CONFIDENCE"},
+		{"iou above one", func(c *Config) { c.Policy.IoUThreshold = 1.4 }, "IOU_THRESHOLD"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -167,17 +156,5 @@ func TestUnknownDefaultEngineIsRejected(t *testing.T) {
 	t.Setenv("DEFAULT_ENGINE", "telepathy")
 	if _, err := Load(); err == nil {
 		t.Fatal("an unknown DEFAULT_ENGINE should fail at startup, not at first request")
-	}
-}
-
-func TestVLMEnabledWithKey(t *testing.T) {
-	clearEnv(t)
-	t.Setenv("ANTHROPIC_API_KEY", "sk-test")
-	cfg, err := Load()
-	if err != nil {
-		t.Fatalf("Load: %v", err)
-	}
-	if !cfg.VLMEnabled() {
-		t.Error("VLMEnabled is false despite a key being present")
 	}
 }

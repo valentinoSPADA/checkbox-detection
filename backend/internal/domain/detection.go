@@ -6,20 +6,17 @@ import (
 	"fmt"
 )
 
-// EngineName identifies which Detector produced a result. It is carried on every Detection,
-// not just on the response envelope, because the assisted engine mixes detections from two
-// sources in one response and an operator debugging a bad box needs to know which one to
-// blame.
+// EngineName identifies which Detector produced a result.
+//
+// Carried on every Detection rather than only on the response envelope. One engine ships
+// today, so the field is constant in practice; it stays per-detection because a response that
+// mixes producers is the case the Detector port exists to allow, and retrofitting provenance
+// onto individual boxes after the fact means finding every place one was constructed.
 type EngineName string
 
 const (
 	// EngineLocal is the two-stage CV + CNN pipeline running in the Python sidecar.
 	EngineLocal EngineName = "local"
-	// EngineVLM is Anthropic Claude reading the page directly as an image.
-	EngineVLM EngineName = "vlm"
-	// EngineAssisted runs the local pipeline and escalates only its uncertain candidates
-	// to the VLM, which is the topology that makes model spend proportional to difficulty.
-	EngineAssisted EngineName = "assisted"
 )
 
 // ErrUnknownEngine is returned when a request names an engine that is not registered.
@@ -35,10 +32,6 @@ func ParseEngine(s string, fallback EngineName) (EngineName, error) {
 		return fallback, nil
 	case EngineLocal:
 		return EngineLocal, nil
-	case EngineVLM:
-		return EngineVLM, nil
-	case EngineAssisted:
-		return EngineAssisted, nil
 	default:
 		return "", fmt.Errorf("%w: %q", ErrUnknownEngine, s)
 	}
@@ -67,7 +60,6 @@ type Stats struct {
 	RawProposals    int `json:"raw_proposals,omitempty"`
 	ScoredProposals int `json:"scored_proposals,omitempty"`
 	Candidates      int `json:"candidates"`
-	Escalated       int `json:"escalated,omitempty"`
 	Returned        int `json:"returned"`
 }
 
