@@ -186,7 +186,7 @@ jobs:
           path: frontend/coverage
 
       - name: SonarCloud scan
-        uses: SonarSource/sonarqube-scan-action@v4
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         # Duplication is the pillar this job exists for: the same box geometry is expressed
