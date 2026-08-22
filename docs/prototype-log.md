@@ -197,3 +197,79 @@ the peak was never going to survive the next page.
   validation reads 0.9651 and moves independently -- epoch 5 fell 5 points on real crops while
   synthetic barely twitched. `train.py --annotations` now holds out real crops and reports
   both, splitting before oversampling so copies of one crop cannot land on both sides.
+
+## Hand labels: the size signal, and an evaluation that had to be thrown out
+
+627 candidates labelled by hand — the whole surfaced pool across the four pages, plus a sample
+of the classifier's rejects so that a *miss* could be recorded at all. No skips.
+
+Agreement with the model then in service: **67.9%**. The first version of that report said
+44.5%, because it counted `rejected -> not_a_checkbox` as a disagreement when it is the same
+answer in two vocabularies. A metric that punishes a model for being right is worse than none.
+
+Of 201 corrections, only **27 sat above the 0.90 floor** and therefore reached the API. Their
+median size was **12 px**, which pointed straight at the actual defect.
+
+### The classifier was size-blind by construction
+
+It receives a 40x40 crop. A 10 px letter counter and a 50 px checkbox arrive identical. It was
+not under-trained on the distinction — it was never shown the feature that carries it.
+
+The hand labels quantified what the models could not:
+
+| Label | n | min side | median | max |
+|---|---|---|---|---|
+| checked | 90 | **20 px** | 50 | 56 |
+| unchecked | 194 | **20 px** | 50 | 56 |
+| not a checkbox | 343 | 10 px | **10 px** | 54 |
+
+### Why the fix is relative, not absolute
+
+An 18 px floor would have removed 85% of the rejects at zero cost to the confirmed boxes. It
+was not taken, because a pixel count means different things on different pages: 10 px is
+0.0039 of sample 1 and 0.0063 of sample 2. Measured as a fraction of page width instead:
+
+| | side / page width |
+|---|---|
+| 284 confirmed checkboxes | 0.0094 - 0.0220 |
+| 343 rejected candidates | median 0.0047 |
+
+So Stage 1 now sweeps `0.0065 - 0.0300` of width — 31% below the smallest confirmed box, 37%
+above the largest — with an absolute fallback for inputs too small for a fraction to mean
+anything. The rule may only ever *narrow* the sweep; a 200 px crop still gets the old 10-70.
+
+| Sample | sweep | raw proposals before | after | cut |
+|---|---|---|---|---|
+| 1 | 17-77 | 108 187 | 31 142 | 71% |
+| 3 | 17-77 | 52 273 | 13 662 | 74% |
+| 4 | 17-77 | 48 937 | 10 581 | 78% |
+
+**284 of 284 confirmed checkboxes are still proposed.**
+
+### Two bugs found while doing this, both mine
+
+**A validation leak I had already warned myself about.** `import_labels` repeated each hand
+label four times before writing the file; `train.py` then split a validation set off the
+result, so four copies of one crop landed on both sides. Held-out "real" accuracy read 0.9990
+— a memorisation score wearing a generalisation label. The comment *"Split BEFORE
+oversampling"* was already in `train.py`; the leak was reintroduced one layer up, where that
+comment could not see it. Repetition is now a weight in the file, applied after the split, and
+a test reconstructs the scenario.
+
+**An evaluation that measured nothing.** Scoring the retrained model against the hand labels
+gave F1 0.991 and recall 1.000 — on pages 470 of whose labels it had trained on. The fix was
+leave-one-page-out: train on samples 1-3 only, score sample 4.
+
+| | GT | Precision | Recall | F1 | Filled/unfilled |
+|---|---|---|---|---|---|
+| Sample 4, unseen page | 79 | 1.000 | 1.000 | 1.000 | 1.000 |
+
+Verified by hashing the model inside the running container rather than trusting the file
+name — the four runs wrote to one path, and three had already overwritten each other.
+
+### What the hand labels proved about the model-made ones
+
+The Claude ground truth holds **44 boxes on sample 4 that are not checkboxes**, every one of
+them exactly 10 px. Scored against it, sample 4's recall was 0.650 and most of the "misses"
+were things that should never have been found. The measurement had been the bottleneck for
+longer than the model was.

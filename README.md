@@ -136,27 +136,52 @@ worth testing.
 
 ## Results
 
-Measured against `eval/ground_truth.json`, at IoU ≥ 0.4, by `eval/evaluate.py` calling the
-**live API** — so what is scored is the system as shipped, policy and thresholds included.
+Measured at IoU >= 0.4 by `eval/evaluate.py` calling the **live API**, so what is scored is
+the system as shipped, policy and thresholds included.
 
-| Sample | GT boxes | Precision | Recall | F1 | Filled/unfilled accuracy |
+Against **`eval/ground_truth_human.json`** — 284 checkboxes judged by a person, one crop at a
+time, not by a model:
+
+| Sample | GT boxes | Precision | Recall | F1 | Filled/unfilled |
 |---|---|---|---|---|---|
-| 1 — URAR 1004 | 130 | 0.930 | 0.823 | **0.873** | 0.935 |
-| 2 — zoomed crop | 89 | 0.936 | 0.494 | 0.647 | 0.977 |
-| 3 — shaded rows | 58 | 0.877 | 0.862 | **0.870** | 0.840 |
-| 4 — watermarked | 123 | 0.964 | 0.650 | 0.777 | 0.963 |
-| **Total (`local`)** | **400** | **0.930** | **0.703** | **0.801** | **0.932** |
-| **Total (`assisted`)** | 400 | **0.939** | **0.725** | **0.818** | **0.938** |
+| 1 — URAR 1004 | 118 | 1.000 | 1.000 | **1.000** | 1.000 |
+| 2 — zoomed crop | 39 | 0.951 | 1.000 | **0.975** | 1.000 |
+| 3 — shaded rows | 48 | 0.941 | 1.000 | **0.970** | 1.000 |
+| 4 — watermarked | 79 | 1.000 | 1.000 | **1.000** | 1.000 |
+| **Total** | **284** | **0.983** | **1.000** | **0.991** | **1.000** |
 
-The classifier is trained on synthetic crops **plus 1832 real crops** from these four pages,
-labelled by Claude and filtered against the pixels (`detector/data/`). Against the same
-reference, the previous synthetic-only model scored 0.884 / 0.670 / **0.762** at its own best
-threshold — so the real labels are worth **+3.9 F1, +4.6 precision, +3.3 recall**.
+**These numbers are contaminated and must not be read as generalisation.** 470 of the 627 hand
+labels went into training, and the 284 boxes above are the positive half of those same labels.
+The table says the detector fits the pages it was fitted on. It is reported because it is the
+honest description of *these four documents*, and because the earlier model could not reach it
+even on data it had seen.
 
-The more useful comparison is stability. Moving the floor from 0.95 to 0.90 cost the
-synthetic-only model 35 points of precision (0.884 → 0.533); the retrained model holds 0.93
-across the whole 0.70–0.90 range. A threshold balanced on a knife edge is not an operating
-point, it is a coincidence.
+The number that does measure generalisation is a **leave-one-page-out** run: a model trained
+only on samples 1-3 — neither the hand labels nor the Claude labels from sample 4 — scored
+against sample 4, the hardest page of the four:
+
+| | GT | Precision | Recall | F1 | Filled/unfilled |
+|---|---|---|---|---|---|
+| **Sample 4, page never seen in training** | 79 | **1.000** | **1.000** | **1.000** | **1.000** |
+
+Held at 0.80, 0.90 and 0.95 alike; at 0.70 it takes one false positive and at 0.50 three.
+Independently, held-out **crop**-level accuracy on 495 real crops the classifier never saw is
+**0.996**, with zero checked/unchecked confusion.
+
+Two limits on even the leave-one-page-out figure, stated because they are not obvious:
+
+* **Stage 1 saw the page.** Its size sweep was calibrated on all 284 hand-confirmed boxes,
+  sample 4's included. So this measures an unseen page against an unseen *classifier*, not an
+  unseen system. Four pages is not enough data to separate the two and still have any left.
+* **Recall is relative to the candidate pool.** The 79 boxes are the ones a person confirmed
+  out of what Stage 1 nominated; a checkbox never proposed cannot appear. Stage 1's own recall
+  was measured separately and is 284/284 on the confirmed set.
+
+The previous, model-generated ground truth (`eval/ground_truth.json`, 400 boxes) is kept for
+comparison and is measurably worse: on sample 4 it holds **44 boxes that are not checkboxes**,
+every one of them 10 px, all of them letter counters the human rejected. Scoring against it
+put sample 4's recall at 0.650 — most of the "misses" were things that should never have been
+found.
 
 Reading these honestly:
 

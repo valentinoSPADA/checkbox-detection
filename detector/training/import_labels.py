@@ -74,32 +74,66 @@ def cut(samples: Path, records: list[dict]) -> np.ndarray:
     return np.stack(out).astype(np.float32) if out else np.zeros((0, 40, 40), np.float32)
 
 
+# The floor the service ships with (domain.DefaultPolicy.MinConfidence). Errors above it are
+# the ones that reach a caller; errors below it were already being discarded.
+OPERATING_FLOOR = 0.90
+
+
+def model_verdict(record: dict) -> str:
+    """What the model effectively said about a candidate, in the labeller's vocabulary.
+
+    "rejected" means the classifier scored the candidate below the pipeline floor, which is
+    the model asserting `not_a_checkbox` -- an ANSWER, not an abstention. Reporting the two as
+    different values counts every correct rejection as a disagreement, and on this dataset
+    that alone moved apparent agreement from 68% to 45%. A metric that punishes a model for
+    being right is worse than no metric.
+    """
+    said = record.get("model_says", "")
+    return "not_a_checkbox" if said == "rejected" else said
+
+
 def report_disagreements(records: list[dict]) -> None:
     """Print where the human overruled the model, because that is the point of the exercise.
 
     A hand-labelling pass that agrees with the model everywhere taught the model nothing and
     should be visible as such, rather than being reported as several hundred new labels.
+
+    Split by confidence, because the two halves mean different things. Below the operating
+    floor an error costs nothing today -- the policy layer was dropping that candidate anyway,
+    and the label is worth having only as training signal. At or above it, the error is what a
+    caller of the API actually receives, and no threshold can remove it.
     """
-    rows = [r for r in records if r.get("model_says") in {"checked", "unchecked", "rejected"}]
+    rows = [r for r in records if model_verdict(r) in LABELS]
     if not rows:
         return
-    agree = sum(1 for r in rows if r["model_says"] == r["label"])
+    agree = sum(1 for r in rows if model_verdict(r) == r["label"])
     print(f"\nagreement with the current model: {agree}/{len(rows)} ({agree / len(rows):.1%})")
 
-    pairs = Counter((r["model_says"], r["label"]) for r in rows if r["model_says"] != r["label"])
-    if not pairs:
+    wrong = [r for r in rows if model_verdict(r) != r["label"]]
+    if not wrong:
         print("  no disagreements -- this pass confirms the model rather than correcting it")
         return
-    print("  corrections, most common first:")
-    for (said, truth), n in pairs.most_common(10):
-        print(f"    model said {said:<14s} -> actually {truth:<16s} {n:4d}")
 
-    # Confidently wrong is the interesting subset: an error the threshold cannot filter out.
-    confident = [r for r in rows
-                 if r["model_says"] != r["label"] and r.get("confidence", 0) >= 0.90]
-    if confident:
-        print(f"  of those, {len(confident)} were held at confidence >= 0.90 -- errors no "
-              f"threshold can remove")
+    served = [r for r in wrong if r.get("confidence", 0) >= OPERATING_FLOOR]
+    below = [r for r in wrong if r.get("confidence", 0) < OPERATING_FLOOR]
+    print(f"  {len(wrong)} corrections, of which {len(served)} sit at confidence "
+          f">= {OPERATING_FLOOR} and therefore reach the API's output")
+
+    for title, subset in (("errors the API serves", served),
+                          ("errors already below the floor", below)):
+        pairs = Counter((model_verdict(r), r["label"]) for r in subset)
+        if not pairs:
+            continue
+        print(f"  {title}:")
+        for (said, truth), n in pairs.most_common(10):
+            print(f"    model said {said:<16s} -> actually {truth:<16s} {n:4d}")
+
+    # Size is reported because it is actionable in a way a class name is not: if the served
+    # errors cluster at one end of Stage 1's 10-70 px sweep, the sweep is the thing to change.
+    sizes = sorted(max(r["bbox"][2] - r["bbox"][0], r["bbox"][3] - r["bbox"][1]) for r in served)
+    if sizes:
+        print(f"  their sizes: min {sizes[0]} px, median {sizes[len(sizes) // 2]} px, "
+              f"max {sizes[-1]} px")
 
 
 def main() -> int:
@@ -112,10 +146,21 @@ def main() -> int:
     ap.add_argument("--out", type=Path, default=Path("data/merged.npz"))
     ap.add_argument("--human-weight", type=int, default=4,
                     help="times each hand label is repeated relative to a model label")
+    ap.add_argument("--exclude-image", default=None,
+                    help="drop every label from this page, for leave-one-page-out validation")
     args = ap.parse_args()
 
     records = json.loads(args.labels.read_text(encoding="utf-8"))
     records = [r for r in records if r.get("label") in LABELS]
+    if args.exclude_image:
+        # Leave-one-page-out. Holding out random CROPS is not enough to measure
+        # generalisation here: crops from one page share a scan, a font, a rule weight and a
+        # watermark, so a model that memorised page 1's particular grey can score well on
+        # page 1's held-out crops while knowing nothing transferable. Only a whole unseen page
+        # answers "would this work on a document we have never seen".
+        before = len(records)
+        records = [r for r in records if r["image"] != args.exclude_image]
+        print(f"excluded {before - len(records)} labels from {args.exclude_image}")
     if not records:
         print("no usable labels in that file", file=sys.stderr)
         return 1
@@ -126,11 +171,22 @@ def main() -> int:
     x_human = cut(args.samples, records)
     y_human = np.array([LABELS[r["label"]] for r in records], np.int64)
 
-    xs = [np.repeat(x_human, args.human_weight, axis=0)]
-    ys = [np.repeat(y_human, args.human_weight, axis=0)]
-    provenance = ["human"] * len(ys[0])
+    # Written as a WEIGHT, not as repeated rows.
+    #
+    # An earlier version repeated each hand label four times here, and train.py then split a
+    # validation set off the result -- so four copies of one crop landed on both sides and
+    # held-out "real" accuracy read 0.9990, which is a memorisation score wearing a
+    # generalisation label. Duplication has to happen after the split or not at all, and the
+    # only place that knows where the split is, is train.py.
+    xs = [x_human]
+    ys = [y_human]
+    ws = [np.full(len(y_human), args.human_weight, np.int64)]
+    provenance = ["human"] * len(y_human)
 
-    if args.merge and str(args.merge) and args.merge.exists():
+    # `args.merge.name` rather than a truth test on the Path: argparse turns an empty string
+    # into Path("."), which is truthy AND exists, and then asking it for a sibling .json
+    # raises somewhere far from the flag that caused it.
+    if args.merge is not None and args.merge.name and args.merge.exists():
         prior = json.loads(args.merge.with_suffix(".json").read_text(encoding="utf-8"))
         d = np.load(args.merge)
         xm, ym = d["crops"].astype(np.float32), d["labels"].astype(np.int64)
@@ -142,22 +198,26 @@ def main() -> int:
             by_image.setdefault(r["image"], []).append(r["bbox"])
 
         keep = [k for k, rec in enumerate(prior)
-                if all(iou(rec["bbox"], b) < SAME_BOX_IOU
-                       for b in by_image.get(rec["image"], []))]
+                if rec["image"] != args.exclude_image
+                and all(iou(rec["bbox"], b) < SAME_BOX_IOU
+                        for b in by_image.get(rec["image"], []))]
         dropped = len(prior) - len(keep)
         xs.append(xm[keep])
         ys.append(ym[keep])
+        ws.append(np.ones(len(keep), np.int64))
         provenance += ["model"] * len(keep)
         print(f"\nmerged {len(keep)} model labels ({dropped} superseded by a hand label)")
 
     x = np.concatenate(xs)
     y = np.concatenate(ys)
+    w = np.concatenate(ws)
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(args.out, crops=x, labels=y)
+    np.savez_compressed(args.out, crops=x, labels=y, weights=w)
     balance = {NAMES[k]: int((y == k).sum()) for k in sorted(NAMES)}
-    print(f"\nwrote {len(y)} training rows to {args.out}")
+    print(f"\nwrote {len(y)} distinct crops to {args.out}")
     print(f"class balance: {balance}")
     print(f"provenance: {Counter(provenance)}")
+    print(f"hand labels carry weight {args.human_weight}, applied after the validation split")
     print(f"\nnext: python -m training.train --annotations {args.out}")
     return 0
 

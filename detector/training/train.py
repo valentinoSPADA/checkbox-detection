@@ -150,24 +150,35 @@ def main() -> None:
         xr, yr = d["crops"].astype(np.float32), d["labels"].astype(np.int64)
         if xr.ndim == 3:
             xr = xr[:, None]
+        # Per-row weight, when the file carries one: hand labels are more trustworthy than
+        # model labels and are repeated more, but the *file* must hold one row per crop so
+        # that the split below can be honest. See training/import_labels.py.
+        wr = d["weights"].astype(np.int64) if "weights" in d.files else np.ones(len(yr), np.int64)
 
-        # Split BEFORE oversampling. Repeating first and splitting after would put copies of
-        # the same crop on both sides and turn validation into a memorisation check.
+        # Split BEFORE oversampling. Repeating first and splitting after puts copies of the
+        # same crop on both sides and turns validation into a memorisation check -- which is
+        # not hypothetical: it happened, and read 0.9990 on held-out "real" crops.
         rs = np.random.default_rng(args.seed).permutation(len(xr))
         cut = int(len(xr) * args.real_holdout)
         hold, keep = rs[:cut], rs[cut:]
 
-        # Oversampled because 1.4k real crops against 80k synthetic would otherwise contribute
-        # almost nothing to the gradient. Repetition rather than a class weight, so that the
-        # augmentation already baked into the synthetic pipeline is not applied to them twice.
-        xr_tr = np.repeat(xr[keep], args.real_weight, axis=0)
-        yr_tr = np.repeat(yr[keep], args.real_weight, axis=0)
+        # Oversampled because a couple of thousand real crops against 80k synthetic would
+        # otherwise contribute almost nothing to the gradient. Repetition rather than a class
+        # weight, so the augmentation already baked into the synthetic pipeline is not applied
+        # to them a second time.
+        reps = np.repeat(keep, wr[keep] * args.real_weight)
+        xr_tr = xr[reps]
+        yr_tr = yr[reps]
         xtr = np.concatenate([xtr, xr_tr])
         ytr = np.concatenate([ytr, yr_tr])
         real_va = DataLoader(TensorDataset(torch.from_numpy(xr[hold]),
                                            torch.from_numpy(yr[hold])), batch_size=512)
-        print(f"mixed in {len(keep)} real crops x{args.real_weight}, "
-              f"holding out {len(hold)} for real validation")
+        # Both numbers, because they answer different questions: how much real data exists,
+        # and how loudly it speaks in the loss. A per-row weight multiplies --real-weight, so
+        # hand labels at weight 4 end up repeated 4 x real_weight times.
+        print(f"mixed in {len(keep)} distinct real crops -> {len(reps)} training rows "
+              f"(base x{args.real_weight}, per-row weight {wr[keep].min()}-{wr[keep].max()}), "
+              f"holding out {len(hold)} distinct crops for real validation")
 
     tr = DataLoader(TensorDataset(torch.from_numpy(xtr), torch.from_numpy(ytr)),
                     batch_size=args.batch, shuffle=True, drop_last=True)

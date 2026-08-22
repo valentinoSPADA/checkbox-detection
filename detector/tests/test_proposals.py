@@ -13,9 +13,18 @@ import numpy as np
 import pytest
 
 from engine.preprocess import binarize, crop_with_context, decode, mark_candidate, to_gray
-from engine.proposals import MAX_SIDE, MIN_SIDE, Proposal, _run_lengths, propose
+from engine.proposals import (
+    MAX_SIDE,
+    MAX_SIDE_FLOOR,
+    MIN_SIDE,
+    SIZE_STEP,
+    Proposal,
+    _run_lengths,
+    propose,
+    size_range,
+)
 from training.annotate import interior_brightness, stratified_sample, verdict_agrees
-from training.import_labels import LABELS, SAME_BOX_IOU, iou
+from training.import_labels import LABELS, REPO, SAME_BOX_IOU, iou
 
 
 def page(width: int = 300, height: int = 200, shade: int = 255) -> np.ndarray:
@@ -361,3 +370,97 @@ class TestHandLabelMerge:
         # The importer writes indices straight into the training set; a mismatch with the
         # model's class order would train every label onto the wrong output.
         assert LABELS == {"not_a_checkbox": 0, "unchecked": 1, "checked": 2}
+
+
+class TestSizeRange:
+    """The scale-relative sweep, calibrated on 284 hand-confirmed checkboxes.
+
+    Measured side/page-width over those boxes: min 0.0094, median 0.0196, max 0.0220. Over the
+    343 candidates a person rejected: median 0.0047. The bounds sit outside the real range on
+    both ends, so the classifier still decides everything a checkbox could plausibly be.
+    """
+
+    def test_a_full_page_gets_a_narrowed_sweep(self):
+        lo, hi = size_range(2550)
+        assert lo == 17, "0.0065 x 2550; below the smallest confirmed box (24 px) with margin"
+        assert hi >= 56, "must still cover the largest confirmed box on these pages"
+
+    def test_every_confirmed_checkbox_size_is_inside_the_sweep(self):
+        # The observed extremes, in the pages they came from. If either fell outside, the
+        # stage would silently stop proposing real checkboxes -- unrecoverable downstream.
+        lo, hi = size_range(2550)
+        assert lo <= 24 and hi >= 56          # sample 4's smallest, sample 1's largest
+        lo, hi = size_range(1586)
+        assert lo <= 20 and hi >= 26          # sample 2, the smaller crop
+
+    def test_a_small_crop_falls_back_to_the_absolute_range(self):
+        # 0.0065 of 200 px is one pixel. A rule derived from full pages must not turn a
+        # legitimate crop into an image the detector considers empty.
+        lo, hi = size_range(200)
+        assert (lo, hi) == (MIN_SIDE, MAX_SIDE_FLOOR)
+
+    def test_the_relative_rule_only_ever_narrows(self):
+        # The guarantee that makes this safe to ship: on no input is the sweep wider at the
+        # bottom or shorter at the top than the range that preceded it.
+        for width in (100, 640, 1586, 2550, 5100, 20000):
+            lo, hi = size_range(width)
+            assert lo >= MIN_SIDE
+            assert hi >= MAX_SIDE_FLOOR or hi == lo + SIZE_STEP
+            assert hi <= MAX_SIDE
+            assert lo < hi
+
+    def test_a_huge_scan_is_clamped_rather_than_unbounded(self):
+        # Cost control: without the clamp a 20000 px input would sweep 300 sizes.
+        _, hi = size_range(20000)
+        assert hi == MAX_SIDE
+
+    def test_propose_uses_the_range_when_not_told_otherwise(self):
+        # Production must never pass explicit bounds; this pins that the default path is the
+        # adaptive one rather than a leftover constant.
+        # 0.0065 x 4000 = 26 px, so a 10 px box on a page this wide is exactly the letter
+        # counter this rule exists to stop nominating. Well clear of the +-tol edge slack,
+        # which on its own lets a 10 px box match a sweep size of 13.
+        img = np.full((400, 4000), 255, np.uint8)
+        draw_box(img, 2000, 200, 10, thickness=2)
+        assert size_range(4000)[0] == 26
+        assert propose(binarize(img)) == []
+
+        # The same size on a page narrow enough for the fallback range is still found, which
+        # is what "only ever narrows" means in practice.
+        small = np.full((160, 240), 255, np.uint8)
+        draw_box(small, 60, 60, 14, thickness=2)
+        assert propose(binarize(small))
+
+
+class TestWeightsAreNotRows:
+    """Oversampling must be a weight in the file, never duplicated rows.
+
+    This is pinned because it went wrong: import_labels repeated each hand label four times
+    before writing, train.py split a validation set off the result, and four copies of one
+    crop landed on both sides. Held-out "real" accuracy read 0.9990 -- a memorisation score
+    wearing a generalisation label.
+    """
+
+    def test_merged_file_holds_one_row_per_crop(self, tmp_path):
+        import json
+
+        from training.import_labels import main as import_main
+
+        labels = [{"image": "sample_1_urar_1004.png", "bbox": [186, 3102, 238, 3154],
+                   "label": "unchecked", "model_says": "unchecked", "confidence": 0.98},
+                  {"image": "sample_1_urar_1004.png", "bbox": [1077, 1399, 1129, 1451],
+                   "label": "checked", "model_says": "checked", "confidence": 0.97}]
+        src = tmp_path / "labels.json"
+        src.write_text(json.dumps(labels), encoding="utf-8")
+        out = tmp_path / "merged.npz"
+
+        argv = ["--labels", str(src), "--merge", "", "--out", str(out),
+                "--samples", str(REPO / "samples")]
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr("sys.argv", ["import_labels", *argv])
+            assert import_main() == 0
+
+        d = np.load(out)
+        assert len(d["labels"]) == len(labels), "rows must not be duplicated in the file"
+        assert "weights" in d.files, "the repeat count must travel as a weight"
+        assert (d["weights"] == 4).all()

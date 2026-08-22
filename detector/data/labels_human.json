@@ -1,0 +1,7526 @@
+[
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   673,
+   1813,
+   703,
+   1843
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9878
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   128,
+   330,
+   146,
+   348
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0784
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   593,
+   419,
+   603,
+   429
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3772
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   276,
+   644,
+   300,
+   668
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9813
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1858,
+   3657,
+   1912,
+   3711
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9734
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1098,
+   521,
+   1122,
+   545
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9815
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   693,
+   132,
+   703,
+   142
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.6188
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1845,
+   648,
+   1855,
+   658
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1153
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   500,
+   1966,
+   530,
+   1996
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9679
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   382,
+   2758,
+   434,
+   2810
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.984
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1493,
+   102,
+   1503,
+   112
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6477
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   981,
+   97,
+   1003,
+   119
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9828
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   202,
+   2327,
+   216,
+   2341
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3925
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1152,
+   3205,
+   1202,
+   3255
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.969
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   647,
+   178,
+   659,
+   190
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0944
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   335,
+   2806,
+   387,
+   2858
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9737
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1730,
+   402,
+   1758,
+   430
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9886
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   127,
+   3355,
+   151,
+   3379
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2915
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   708,
+   163,
+   718,
+   173
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.352
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1144,
+   3006,
+   1196,
+   3058
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9757
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1362,
+   111,
+   1376,
+   125
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3421
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   698,
+   141,
+   710,
+   153
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.583
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   321,
+   1715,
+   333,
+   1727
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3139
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   590,
+   402,
+   618,
+   430
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9878
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   51,
+   1439,
+   93,
+   1481
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0838
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   296,
+   321,
+   308,
+   333
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1053
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   244,
+   499,
+   258,
+   513
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.981
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   602,
+   1776,
+   614,
+   1788
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3185
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   257,
+   38,
+   269,
+   50
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0627
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   561,
+   1279,
+   571,
+   1289
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.883
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   348,
+   2209,
+   402,
+   2263
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9874
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   203,
+   643,
+   213,
+   653
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4322
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   820,
+   2045,
+   850,
+   2075
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9833
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   860,
+   2360,
+   892,
+   2392
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9808
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1529,
+   2164,
+   1553,
+   2188
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9834
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   997,
+   1279,
+   1007,
+   1289
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1652
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   75,
+   1458,
+   93,
+   1476
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0928
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   71,
+   1346,
+   81,
+   1356
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1917
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   468,
+   2253,
+   522,
+   2307
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.981
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1188,
+   521,
+   1212,
+   545
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9787
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   158,
+   528,
+   170,
+   540
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0688
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2154,
+   3079,
+   2164,
+   3089
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3782
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   687,
+   704,
+   697,
+   714
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3118
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   74,
+   3154,
+   86,
+   3166
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3251
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1370,
+   260,
+   1382,
+   272
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0809
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   204,
+   2822,
+   216,
+   2834
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9469
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   465,
+   790,
+   495,
+   820
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.992
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   458,
+   3075,
+   468,
+   3085
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6041
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1523,
+   3079,
+   1533,
+   3089
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3782
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   976,
+   320,
+   990,
+   334
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3744
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   677,
+   619,
+   687,
+   629
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3059
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   684,
+   628,
+   696,
+   640
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.6352
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   878,
+   1433,
+   888,
+   1443
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1522
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2040,
+   2327,
+   2054,
+   2341
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3925
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1500,
+   1453,
+   1554,
+   1507
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9773
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   609,
+   1389,
+   623,
+   1403
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1117
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   212,
+   650,
+   222,
+   660
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.8735
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   305,
+   1405,
+   359,
+   1459
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9785
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   754,
+   2858,
+   806,
+   2910
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9722
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1387,
+   619,
+   1397,
+   629
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3796
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   278,
+   1076,
+   300,
+   1098
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1391
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   849,
+   129,
+   871,
+   151
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.979
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   2029,
+   2005,
+   2059,
+   2035
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9816
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   131,
+   1163,
+   149,
+   1181
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3371
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   71,
+   3139,
+   81,
+   3149
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9404
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   844,
+   492,
+   868,
+   516
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9806
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   756,
+   2367,
+   766,
+   2377
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3043
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2235,
+   949,
+   2289,
+   1003
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9013
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   131,
+   3339,
+   149,
+   3357
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1177
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1121,
+   2241,
+   1151,
+   2271
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9857
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   237,
+   497,
+   247,
+   507
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.6002
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1162,
+   516,
+   1192,
+   546
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.973
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1513,
+   3976,
+   1535,
+   3998
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1328
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1297,
+   1453,
+   1351,
+   1507
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9812
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1764,
+   1297,
+   1814,
+   1347
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9433
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   222,
+   852,
+   274,
+   904
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.936
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   676,
+   1450,
+   730,
+   1504
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9802
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1868,
+   2473,
+   1898,
+   2503
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9672
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   959,
+   1552,
+   969,
+   1562
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.16
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   875,
+   3487,
+   885,
+   3497
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1201
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   186,
+   3159,
+   236,
+   3209
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9818
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   283,
+   132,
+   293,
+   142
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3867
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   131,
+   642,
+   149,
+   660
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3371
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2235,
+   2749,
+   2289,
+   2803
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9893
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   102,
+   590,
+   114,
+   602
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0564
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   43,
+   311,
+   53,
+   321
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0727
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1381,
+   1631,
+   1391,
+   1641
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1447
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   307,
+   1444,
+   323,
+   1460
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1014
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   282,
+   157,
+   306,
+   181
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9798
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   157,
+   4001,
+   169,
+   4013
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.202
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   343,
+   380,
+   353,
+   390
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0717
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1268,
+   734,
+   1278,
+   744
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9265
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   449,
+   673,
+   471,
+   695
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9839
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2283,
+   2206,
+   2335,
+   2258
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9859
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   492,
+   1450,
+   544,
+   1502
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.964
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   857,
+   3106,
+   909,
+   3158
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9584
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   916,
+   349,
+   928,
+   361
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.4527
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   467,
+   2005,
+   517,
+   2055
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9787
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   82,
+   676,
+   96,
+   690
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.6575
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   695,
+   710,
+   705,
+   720
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5076
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   66,
+   2949,
+   76,
+   2959
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.288
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   711,
+   687,
+   721,
+   697
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1705
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1315,
+   3158,
+   1367,
+   3210
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9797
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1180,
+   771,
+   1190,
+   781
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1278
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1218,
+   2005,
+   1248,
+   2035
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9635
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1823,
+   2406,
+   1875,
+   2458
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9688
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1591,
+   1006,
+   1643,
+   1058
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9773
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1162,
+   1814,
+   1190,
+   1842
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9798
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   202,
+   659,
+   214,
+   671
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5423
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   305,
+   2146,
+   323,
+   2164
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1515
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   785,
+   2305,
+   835,
+   2355
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.8589
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2237,
+   2701,
+   2291,
+   2755
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9855
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1195,
+   1778,
+   1207,
+   1790
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1249
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   553,
+   517,
+   583,
+   547
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9795
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1721,
+   3019,
+   1751,
+   3049
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9779
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   470,
+   3111,
+   520,
+   3161
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9825
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   601,
+   1969,
+   631,
+   1999
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9831
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   415,
+   98,
+   435,
+   118
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9736
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2010,
+   1249,
+   2064,
+   1303
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9925
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   746,
+   1526,
+   758,
+   1538
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6162
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1333,
+   399,
+   1363,
+   429
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9814
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1620,
+   648,
+   1630,
+   658
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1622
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1478,
+   612,
+   1500,
+   634
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9791
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   611,
+   1305,
+   641,
+   1335
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.983
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   227,
+   711,
+   237,
+   721
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0678
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   857,
+   3006,
+   909,
+   3058
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9503
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1277,
+   742,
+   1289,
+   754
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4893
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   194,
+   1776,
+   206,
+   1788
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3185
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1237,
+   2710,
+   1265,
+   2738
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9776
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1167,
+   1639,
+   1177,
+   1649
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.894
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1119,
+   3491,
+   1129,
+   3501
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.894
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1633,
+   3106,
+   1685,
+   3158
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.968
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2139,
+   2736,
+   2149,
+   2746
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1947
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1320,
+   2005,
+   1374,
+   2059
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9119
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1731,
+   226,
+   1741,
+   236
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.8722
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1603,
+   908,
+   1629,
+   934
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9857
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1707,
+   440,
+   1733,
+   466
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9851
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   76,
+   1281,
+   88,
+   1293
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3208
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1760,
+   897,
+   1814,
+   951
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9614
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   750,
+   2356,
+   778,
+   2384
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9734
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1957,
+   2406,
+   2011,
+   2460
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9818
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   322,
+   2326,
+   334,
+   2338
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6162
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1356,
+   1341,
+   1366,
+   1351
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2846
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   70,
+   3039,
+   82,
+   3051
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9257
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   204,
+   2722,
+   216,
+   2734
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9469
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   855,
+   519,
+   881,
+   545
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9854
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   730,
+   402,
+   758,
+   430
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9866
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1077,
+   1406,
+   1129,
+   1458
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9897
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   699,
+   172,
+   711,
+   184
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.7432
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   2031,
+   594,
+   2045,
+   608
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5022
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   433,
+   2168,
+   445,
+   2180
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9644
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   219,
+   226,
+   229,
+   236
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2733
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   205,
+   1279,
+   215,
+   1289
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.883
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   770,
+   3205,
+   824,
+   3259
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9246
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   492,
+   1406,
+   544,
+   1458
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9894
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   67,
+   3800,
+   85,
+   3818
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4319
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   77,
+   2991,
+   87,
+   3001
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0825
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   139,
+   3171,
+   149,
+   3181
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1269
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2010,
+   949,
+   2064,
+   1003
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9013
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1966,
+   1741,
+   1976,
+   1751
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9282
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1402,
+   2327,
+   1416,
+   2341
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3925
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   829,
+   479,
+   855,
+   505
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9818
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   71,
+   1355,
+   81,
+   1365
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1323
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   441,
+   606,
+   493,
+   658
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9773
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1176,
+   736,
+   1200,
+   760
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9851
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1760,
+   1249,
+   1814,
+   1303
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.988
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2235,
+   1097,
+   2289,
+   1151
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9832
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   131,
+   3138,
+   149,
+   3156
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1085
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   364,
+   673,
+   388,
+   697
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.977
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   571,
+   742,
+   581,
+   752
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.06
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1139,
+   2903,
+   1189,
+   2953
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9757
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1483,
+   162,
+   1501,
+   180
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1073
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   275,
+   615,
+   301,
+   641
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9713
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   454,
+   690,
+   466,
+   702
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9388
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   258,
+   1776,
+   270,
+   1788
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2164
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   719,
+   226,
+   729,
+   236
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.8722
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   727,
+   1268,
+   737,
+   1278
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1096
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1358,
+   2358,
+   1410,
+   2410
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9775
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1006,
+   2239,
+   1036,
+   2269
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9813
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   600,
+   2005,
+   630,
+   2035
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9762
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2164,
+   704,
+   2218,
+   758
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9727
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   677,
+   644,
+   701,
+   668
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9851
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   128,
+   3315,
+   150,
+   3337
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2987
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   754,
+   3058,
+   806,
+   3110
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9795
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1551,
+   440,
+   1577,
+   466
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9851
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   821,
+   615,
+   831,
+   625
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9211
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1337,
+   1305,
+   1367,
+   1335
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9768
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2153,
+   2979,
+   2163,
+   2989
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3782
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   257,
+   2756,
+   311,
+   2810
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9817
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   778,
+   1345,
+   808,
+   1375
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9812
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1656,
+   1851,
+   1690,
+   1885
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9777
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2098,
+   3156,
+   2150,
+   3208
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9468
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1633,
+   3054,
+   1685,
+   3106
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9829
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   680,
+   704,
+   704,
+   728
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9642
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1316,
+   3056,
+   1372,
+   3112
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9586
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1273,
+   1661,
+   1283,
+   1671
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1128
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1218,
+   402,
+   1246,
+   430
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9891
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1053,
+   554,
+   1105,
+   606
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9674
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   289,
+   126,
+   299,
+   136
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.8036
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   471,
+   1122,
+   487,
+   1138
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5134
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1502,
+   1726,
+   1514,
+   1738
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3185
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1216,
+   1968,
+   1246,
+   1998
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9838
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   288,
+   377,
+   300,
+   389
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0779
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   534,
+   1856,
+   544,
+   1866
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1046
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   62,
+   1146,
+   90,
+   1174
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2215
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   2029,
+   1969,
+   2059,
+   1999
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9869
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   490,
+   1354,
+   544,
+   1408
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9784
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   401,
+   3283,
+   411,
+   3293
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.883
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   363,
+   1928,
+   381,
+   1946
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1184
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   310,
+   1715,
+   322,
+   1727
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2405
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2014,
+   1051,
+   2064,
+   1101
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9712
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1017,
+   476,
+   1047,
+   506
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9811
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1104,
+   538,
+   1116,
+   550
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.8957
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   388,
+   1329,
+   398,
+   1339
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.8571
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1388,
+   644,
+   1412,
+   668
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9826
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   242,
+   506,
+   254,
+   518
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3132
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   43,
+   415,
+   53,
+   425
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3154
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   51,
+   3211,
+   105,
+   3265
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1024
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1122,
+   2054,
+   1136,
+   2068
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6931
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   980,
+   156,
+   1004,
+   180
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9839
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1545,
+   399,
+   1575,
+   429
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.979
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2014,
+   1197,
+   2064,
+   1247
+  ],
+  "label": "unchecked",
+  "model_says": "checked",
+  "confidence": 0.9658
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   257,
+   2656,
+   311,
+   2710
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9808
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   138,
+   3102,
+   150,
+   3114
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1511
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1403,
+   619,
+   1413,
+   629
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4744
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   356,
+   852,
+   408,
+   904
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9219
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   59,
+   1595,
+   69,
+   1605
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4364
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   361,
+   1227,
+   371,
+   1237
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0957
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   271,
+   980,
+   289,
+   998
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3108
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   478,
+   399,
+   488,
+   409
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5253
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   158,
+   97,
+   178,
+   117
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9735
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   155,
+   156,
+   179,
+   180
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9731
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   290,
+   142,
+   302,
+   154
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.565
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2017,
+   3657,
+   2071,
+   3711
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9748
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1315,
+   3106,
+   1367,
+   3158
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9724
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1761,
+   801,
+   1815,
+   855
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9688
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1280,
+   1780,
+   1290,
+   1790
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.8585
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1259,
+   676,
+   1273,
+   690
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3503
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1181,
+   2179,
+   1195,
+   2193
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0883
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   953,
+   2957,
+   1007,
+   3011
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9733
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   196,
+   644,
+   220,
+   668
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9795
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   62,
+   3078,
+   82,
+   3098
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1696
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   83,
+   1603,
+   93,
+   1613
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1719
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1355,
+   1302,
+   1365,
+   1312
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4334
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   103,
+   199,
+   113,
+   209
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1349
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2106,
+   318,
+   2118,
+   330
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0956
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1507,
+   1382,
+   1533,
+   1408
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9744
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   52,
+   3187,
+   76,
+   3211
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3122
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   903,
+   2039,
+   913,
+   2049
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.303
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1765,
+   1146,
+   1819,
+   1200
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9269
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   935,
+   2045,
+   945,
+   2055
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1456
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   466,
+   1101,
+   494,
+   1129
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9692
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   903,
+   351,
+   913,
+   361
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0658
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1434,
+   2276,
+   1446,
+   2288
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6162
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   539,
+   554,
+   591,
+   606
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9741
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   454,
+   1329,
+   464,
+   1339
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.8571
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   444,
+   2630,
+   456,
+   2642
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0808
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1182,
+   1765,
+   1200,
+   1783
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3816
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1884,
+   1671,
+   1894,
+   1681
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.7566
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2235,
+   1297,
+   2289,
+   1351
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9744
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1034,
+   2658,
+   1086,
+   2710
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9791
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   59,
+   1213,
+   69,
+   1223
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4364
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1094,
+   1279,
+   1104,
+   1289
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.883
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1760,
+   1197,
+   1814,
+   1251
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9883
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1592,
+   3205,
+   1648,
+   3261
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9705
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1345,
+   3205,
+   1399,
+   3259
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9122
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   649,
+   506,
+   701,
+   558
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9864
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   684,
+   1279,
+   694,
+   1289
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.883
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   332,
+   492,
+   356,
+   516
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9781
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   2144,
+   1966,
+   2174,
+   1996
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9774
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   465,
+   420,
+   481,
+   436
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.7647
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   914,
+   1279,
+   924,
+   1289
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.883
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1116,
+   1515,
+   1126,
+   1525
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2048
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   848,
+   156,
+   872,
+   180
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9798
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1077,
+   1450,
+   1131,
+   1504
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9765
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   333,
+   507,
+   383,
+   557
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9678
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2237,
+   897,
+   2291,
+   951
+  ],
+  "label": "unchecked",
+  "model_says": "checked",
+  "confidence": 0.9092
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   750,
+   2957,
+   804,
+   3011
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9726
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1276,
+   2785,
+   1306,
+   2815
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9795
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   552,
+   1812,
+   584,
+   1844
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9825
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   51,
+   3686,
+   61,
+   3696
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0737
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   69,
+   1348,
+   89,
+   1368
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2296
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2154,
+   3129,
+   2164,
+   3139
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3782
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1034,
+   3156,
+   1086,
+   3208
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9444
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2099,
+   2739,
+   2109,
+   2749
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1236
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   756,
+   612,
+   778,
+   634
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9786
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1251,
+   1329,
+   1261,
+   1339
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.8571
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1837,
+   3021,
+   1867,
+   3051
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9857
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2315,
+   1055,
+   2365,
+   1105
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9593
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2130,
+   4034,
+   2140,
+   4044
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.5526
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1532,
+   507,
+   1582,
+   557
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9759
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   721,
+   4068,
+   741,
+   4088
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3247
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   679,
+   649,
+   689,
+   659
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9132
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   637,
+   2306,
+   689,
+   2358
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9667
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   397,
+   2826,
+   419,
+   2848
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1391
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   659,
+   2005,
+   713,
+   2059
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.977
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1338,
+   1476,
+   1350,
+   1488
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2164
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1949,
+   3101,
+   2003,
+   3155
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9825
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   686,
+   719,
+   698,
+   731
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4505
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1729,
+   1976,
+   1743,
+   1990
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.9144
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   877,
+   2078,
+   889,
+   2090
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4175
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   327,
+   161,
+   339,
+   173
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0923
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   306,
+   739,
+   316,
+   749
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0604
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   176,
+   2806,
+   228,
+   2858
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9409
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1502,
+   1406,
+   1554,
+   1458
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9893
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   288,
+   111,
+   300,
+   123
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4808
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   183,
+   2731,
+   193,
+   2741
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4976
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2010,
+   2749,
+   2064,
+   2803
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9893
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1685,
+   2055,
+   1739,
+   2109
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9854
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   106,
+   102,
+   118,
+   114
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0606
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1757,
+   2473,
+   1787,
+   2503
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9846
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   631,
+   1341,
+   641,
+   1351
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4699
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   486,
+   1101,
+   496,
+   1111
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3112
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   474,
+   1111,
+   484,
+   1121
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2246
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2235,
+   1049,
+   2289,
+   1103
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9846
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1458,
+   1633,
+   1472,
+   1647
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1591
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   124,
+   862,
+   160,
+   898
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5425
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2011,
+   2701,
+   2065,
+   2755
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.976
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   63,
+   3922,
+   73,
+   3932
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1354
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1413,
+   2161,
+   1443,
+   2191
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9601
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1701,
+   906,
+   1731,
+   936
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9805
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1082,
+   2226,
+   1094,
+   2238
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6162
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1385,
+   2785,
+   1415,
+   2815
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9822
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   51,
+   1241,
+   105,
+   1295
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4229
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   306,
+   1726,
+   318,
+   1738
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6162
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   501,
+   2005,
+   531,
+   2035
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9868
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   378,
+   2656,
+   432,
+   2710
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9779
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   553,
+   3205,
+   603,
+   3255
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.8211
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   631,
+   1380,
+   641,
+   1390
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.346
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1064,
+   441,
+   1082,
+   459
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3125
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   470,
+   1170,
+   482,
+   1182
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3314
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1987,
+   1639,
+   1997,
+   1649
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.894
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2019,
+   506,
+   2071,
+   558
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9863
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2171,
+   2887,
+   2181,
+   2897
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1236
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   895,
+   2679,
+   913,
+   2697
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0844
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2015,
+   903,
+   2065,
+   953
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9154
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   583,
+   497,
+   601,
+   515
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0925
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   346,
+   70,
+   358,
+   82
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0543
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   139,
+   1520,
+   149,
+   1530
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1661
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   339,
+   38,
+   351,
+   50
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0669
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   770,
+   706,
+   790,
+   726
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9796
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1341,
+   111,
+   1355,
+   125
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.4208
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1117,
+   1969,
+   1147,
+   1999
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9843
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1454,
+   2365,
+   1464,
+   2375
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.8775
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2236,
+   1153,
+   2290,
+   1207
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9177
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1191,
+   2250,
+   1245,
+   2304
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9819
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1429,
+   1593,
+   1443,
+   1607
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2002
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1119,
+   2008,
+   1143,
+   2032
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9803
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1301,
+   1405,
+   1355,
+   1459
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9871
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1201,
+   1631,
+   1211,
+   1641
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1781
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1068,
+   2205,
+   1122,
+   2259
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9752
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1072,
+   2255,
+   1122,
+   2305
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9802
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   699,
+   126,
+   709,
+   136
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.8133
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   204,
+   822,
+   216,
+   834
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9469
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   756,
+   644,
+   780,
+   668
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9767
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   979,
+   1279,
+   989,
+   1289
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.883
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   186,
+   3111,
+   236,
+   3161
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9882
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1867,
+   3031,
+   1877,
+   3041
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4976
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   157,
+   843,
+   169,
+   855
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.213
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2237,
+   1197,
+   2291,
+   1251
+  ],
+  "label": "unchecked",
+  "model_says": "checked",
+  "confidence": 0.9539
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   693,
+   96,
+   717,
+   120
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9656
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1269,
+   380,
+   1283,
+   394
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0637
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   692,
+   649,
+   702,
+   659
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2592
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   79,
+   3079,
+   89,
+   3089
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4288
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1077,
+   1357,
+   1131,
+   1411
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9866
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1678,
+   1849,
+   1688,
+   1859
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1821
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   162,
+   345,
+   180,
+   363
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0704
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   699,
+   111,
+   711,
+   123
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5179
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   70,
+   3171,
+   82,
+   3183
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9257
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   794,
+   604,
+   848,
+   658
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9763
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1297,
+   1354,
+   1351,
+   1408
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9764
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2281,
+   2250,
+   2335,
+   2304
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9819
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2019,
+   3857,
+   2071,
+   3909
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9745
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   47,
+   629,
+   61,
+   643
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4596
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1760,
+   947,
+   1814,
+   1001
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.8667
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2015,
+   2803,
+   2065,
+   2853
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9154
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   186,
+   3059,
+   236,
+   3109
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9693
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2010,
+   1097,
+   2064,
+   1151
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9843
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1500,
+   1354,
+   1554,
+   1408
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9818
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2239,
+   1247,
+   2289,
+   1297
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.988
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   66,
+   3154,
+   78,
+   3166
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5382
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   303,
+   2613,
+   313,
+   2623
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1953
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1135,
+   1381,
+   1165,
+   1411
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9769
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1919,
+   596,
+   1945,
+   622
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9752
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   416,
+   710,
+   430,
+   724
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0557
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1193,
+   2206,
+   1245,
+   2258
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.987
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   297,
+   163,
+   307,
+   173
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3121
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   313,
+   4034,
+   323,
+   4044
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.5526
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   675,
+   1671,
+   685,
+   1681
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.8977
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1032,
+   2701,
+   1086,
+   2755
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9792
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1242,
+   2087,
+   1268,
+   2113
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.983
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2010,
+   2849,
+   2064,
+   2903
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9013
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   677,
+   613,
+   701,
+   637
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9822
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1276,
+   2806,
+   1286,
+   2816
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1745
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2168,
+   1055,
+   2218,
+   1105
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9774
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   862,
+   2727,
+   872,
+   2737
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.076
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   124,
+   1702,
+   172,
+   1750
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1103
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1173,
+   1586,
+   1187,
+   1600
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2727
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1460,
+   295,
+   1470,
+   305
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1662
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1544,
+   487,
+   1554,
+   497
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1439
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1336,
+   1382,
+   1362,
+   1408
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9808
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   186,
+   2227,
+   200,
+   2241
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3925
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2109,
+   2205,
+   2163,
+   2259
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9898
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   846,
+   2101,
+   856,
+   2111
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1529
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1719,
+   2686,
+   1729,
+   2696
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1357
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   693,
+   103,
+   703,
+   113
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5909
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1510,
+   1668,
+   1528,
+   1686
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1101
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   964,
+   1649,
+   1014,
+   1699
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9648
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   514,
+   2806,
+   566,
+   2858
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9711
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1747,
+   226,
+   1757,
+   236
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2733
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1374,
+   2419,
+   1394,
+   2439
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2564
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   746,
+   1726,
+   758,
+   1738
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6162
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   205,
+   922,
+   217,
+   934
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9469
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1363,
+   1639,
+   1373,
+   1649
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.894
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2237,
+   2797,
+   2291,
+   2851
+  ],
+  "label": "unchecked",
+  "model_says": "checked",
+  "confidence": 0.9092
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1454,
+   76,
+   1466,
+   88
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6162
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   74,
+   380,
+   88,
+   394
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1189
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1953,
+   3059,
+   2003,
+   3109
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9781
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2011,
+   801,
+   2065,
+   855
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.976
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1126,
+   2085,
+   1156,
+   2115
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9825
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1375,
+   1550,
+   1393,
+   1568
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3037
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   980,
+   128,
+   1004,
+   152
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9837
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2147,
+   2906,
+   2199,
+   2958
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9393
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   490,
+   2758,
+   542,
+   2810
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9805
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   848,
+   98,
+   868,
+   118
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9823
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   416,
+   157,
+   440,
+   181
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9803
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1263,
+   740,
+   1273,
+   750
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5574
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   139,
+   527,
+   149,
+   537
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1084
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   815,
+   165,
+   833,
+   183
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0745
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   2044,
+   594,
+   2054,
+   604
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.301
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   633,
+   43,
+   647,
+   57
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3304
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   347,
+   2250,
+   401,
+   2304
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9755
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   791,
+   3491,
+   801,
+   3501
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.894
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   633,
+   477,
+   663,
+   507
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9783
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1738,
+   1006,
+   1790,
+   1058
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9773
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   685,
+   658,
+   699,
+   672
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9685
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1364,
+   1299,
+   1414,
+   1349
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9584
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1764,
+   851,
+   1814,
+   901
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9737
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1346,
+   165,
+   1364,
+   183
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0745
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   278,
+   1128,
+   298,
+   1148
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0953
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2210,
+   2426,
+   2222,
+   2438
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3185
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   95,
+   135,
+   105,
+   145
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0731
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2237,
+   801,
+   2291,
+   855
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9855
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1760,
+   2749,
+   1814,
+   2803
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9893
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1113,
+   527,
+   1123,
+   537
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4579
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   472,
+   2207,
+   522,
+   2257
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9798
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   59,
+   1391,
+   69,
+   1401
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4364
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   590,
+   1476,
+   602,
+   1488
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3185
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1514,
+   2026,
+   1526,
+   2038
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6162
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   658,
+   1551,
+   670,
+   1563
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1295
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   71,
+   1312,
+   89,
+   1330
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0907
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1772,
+   1851,
+   1798,
+   1877
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9767
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1157,
+   1380,
+   1167,
+   1390
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3431
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   81,
+   3886,
+   93,
+   3898
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.6004
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   2145,
+   2005,
+   2175,
+   2035
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9747
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   573,
+   1811,
+   583,
+   1821
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4363
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1480,
+   644,
+   1504,
+   668
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9854
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   134,
+   3302,
+   146,
+   3314
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3798
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2235,
+   2849,
+   2289,
+   2903
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9013
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1399,
+   119,
+   1409,
+   129
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1045
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   368,
+   794,
+   394,
+   820
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9812
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1793,
+   2183,
+   1803,
+   2193
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.883
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2019,
+   706,
+   2071,
+   758
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9778
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2010,
+   849,
+   2064,
+   903
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9893
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1765,
+   2701,
+   1819,
+   2755
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9841
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1152,
+   607,
+   1202,
+   657
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9845
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   70,
+   3227,
+   82,
+   3239
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9257
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1627,
+   1933,
+   1637,
+   1943
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2614
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   855,
+   743,
+   865,
+   753
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0724
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   806,
+   557,
+   860,
+   611
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.98
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   138,
+   1715,
+   148,
+   1725
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1232
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1949,
+   3151,
+   2003,
+   3205
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.981
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   744,
+   164,
+   754,
+   174
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0574
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1623,
+   2836,
+   1633,
+   2846
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1947
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   624,
+   1279,
+   634,
+   1289
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.883
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   611,
+   1341,
+   639,
+   1369
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9618
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   714,
+   494,
+   734,
+   514
+  ],
+  "label": "unchecked",
+  "model_says": "checked",
+  "confidence": 0.9673
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1505,
+   1305,
+   1535,
+   1335
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9854
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1389,
+   613,
+   1411,
+   635
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9831
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   977,
+   3205,
+   1031,
+   3259
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9612
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1642,
+   3972,
+   1654,
+   3984
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9469
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   490,
+   506,
+   542,
+   558
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9864
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   43,
+   15,
+   53,
+   25
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3154
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   923,
+   2327,
+   937,
+   2341
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3925
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   491,
+   3075,
+   501,
+   3085
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3762
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1296,
+   386,
+   1308,
+   398
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2939
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   143,
+   1187,
+   153,
+   1197
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0856
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   503,
+   3491,
+   513,
+   3501
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.894
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   2132,
+   1864,
+   2142,
+   1874
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1154
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   315,
+   1731,
+   325,
+   1741
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0933
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   401,
+   429,
+   411,
+   439
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3782
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   650,
+   2276,
+   662,
+   2288
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6162
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1861,
+   3857,
+   1915,
+   3911
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9562
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   631,
+   1302,
+   641,
+   1312
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3013
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   609,
+   1381,
+   639,
+   1411
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9783
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1060,
+   2859,
+   1110,
+   2909
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9853
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   693,
+   157,
+   717,
+   181
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9743
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   585,
+   135,
+   595,
+   145
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0704
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   678,
+   1406,
+   730,
+   1458
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9905
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   51,
+   3165,
+   105,
+   3219
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3976
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   62,
+   1211,
+   88,
+   1237
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3735
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   305,
+   491,
+   323,
+   509
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1593
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1031,
+   1708,
+   1041,
+   1718
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1824
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   569,
+   828,
+   589,
+   848
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1288
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   750,
+   3157,
+   804,
+   3211
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9753
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   449,
+   1381,
+   479,
+   1411
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9868
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   419,
+   743,
+   429,
+   753
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0949
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   676,
+   1354,
+   730,
+   1408
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9813
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   419,
+   3075,
+   429,
+   3085
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.107
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1279,
+   4034,
+   1289,
+   4044
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.5526
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   531,
+   1429,
+   541,
+   1439
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9414
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   2032,
+   614,
+   2048,
+   630
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.309
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   368,
+   1103,
+   394,
+   1129
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9826
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1426,
+   1584,
+   1438,
+   1596
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.5645
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   304,
+   1201,
+   330,
+   1227
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1306
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1383,
+   1535,
+   1393,
+   1545
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0804
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1393,
+   628,
+   1405,
+   640
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.6961
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   455,
+   673,
+   465,
+   683
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4689
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   2162,
+   947,
+   2188,
+   973
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9812
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1866,
+   1726,
+   1878,
+   1738
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6162
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1337,
+   1341,
+   1367,
+   1371
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9498
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1178,
+   4027,
+   1190,
+   4039
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.4551
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1320,
+   1279,
+   1330,
+   1289
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.883
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   43,
+   235,
+   69,
+   261
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0531
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1024,
+   410,
+   1038,
+   424
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3618
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   143,
+   3483,
+   153,
+   3493
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0856
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2235,
+   849,
+   2289,
+   903
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9893
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1765,
+   2796,
+   1819,
+   2850
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9269
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1314,
+   349,
+   1326,
+   361
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1923
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   964,
+   2903,
+   1014,
+   2953
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.976
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1258,
+   386,
+   1270,
+   398
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1088
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   896,
+   4034,
+   906,
+   4044
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.5526
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   680,
+   711,
+   690,
+   721
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3504
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   463,
+   679,
+   473,
+   689
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4872
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   470,
+   3154,
+   522,
+   3206
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9724
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   159,
+   2609,
+   169,
+   2619
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1321
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   282,
+   96,
+   306,
+   120
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9733
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   333,
+   3205,
+   383,
+   3255
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.8113
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   203,
+   591,
+   213,
+   601
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0547
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1201,
+   2356,
+   1255,
+   2410
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9777
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   754,
+   2659,
+   804,
+   2709
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9703
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1019,
+   1635,
+   1029,
+   1645
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0804
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   449,
+   1343,
+   475,
+   1369
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9776
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   298,
+   133,
+   308,
+   143
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5131
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   67,
+   1500,
+   85,
+   1518
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5506
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2322,
+   1476,
+   2334,
+   1488
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6162
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1568,
+   2005,
+   1618,
+   2055
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9843
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   2026,
+   594,
+   2054,
+   622
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9714
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   961,
+   1279,
+   971,
+   1289
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.883
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   298,
+   103,
+   308,
+   113
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.6811
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   895,
+   779,
+   913,
+   797
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0844
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   830,
+   742,
+   842,
+   754
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0636
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   302,
+   3124,
+   314,
+   3136
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.366
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   684,
+   643,
+   694,
+   653
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3904
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1633,
+   3009,
+   1687,
+   3063
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9734
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   307,
+   1354,
+   359,
+   1406
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9786
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1760,
+   2849,
+   1814,
+   2903
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9013
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2229,
+   507,
+   2279,
+   557
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9791
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   829,
+   676,
+   843,
+   690
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3472
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1633,
+   3158,
+   1685,
+   3210
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9635
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   71,
+   1549,
+   81,
+   1559
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3059
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1063,
+   119,
+   1073,
+   129
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0984
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   992,
+   3006,
+   1044,
+   3058
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9871
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   282,
+   126,
+   306,
+   150
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9806
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1135,
+   1344,
+   1167,
+   1376
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9772
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   416,
+   128,
+   440,
+   152
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9835
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   122,
+   1719,
+   142,
+   1739
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.349
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   527,
+   1671,
+   537,
+   1681
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.4834
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   930,
+   290,
+   942,
+   302
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0923
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1151,
+   1299,
+   1201,
+   1349
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9106
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   323,
+   1218,
+   335,
+   1230
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1338
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   778,
+   1381,
+   808,
+   1411
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9861
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   59,
+   1259,
+   69,
+   1269
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4364
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   754,
+   2706,
+   806,
+   2758
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9509
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   47,
+   262,
+   61,
+   276
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4495
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1345,
+   1268,
+   1355,
+   1278
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1073
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   946,
+   499,
+   958,
+   511
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0695
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1760,
+   1097,
+   1814,
+   1151
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9852
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1135,
+   1305,
+   1165,
+   1335
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9858
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   707,
+   132,
+   717,
+   142
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3582
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   538,
+   676,
+   552,
+   690
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.6682
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   716,
+   2047,
+   742,
+   2073
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9767
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   470,
+   3005,
+   522,
+   3057
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9787
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   287,
+   171,
+   299,
+   183
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5805
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2252,
+   3156,
+   2304,
+   3208
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9549
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   436,
+   1329,
+   446,
+   1339
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.8571
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   470,
+   3058,
+   522,
+   3110
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9891
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   283,
+   162,
+   293,
+   172
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.4818
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   2044,
+   619,
+   2054,
+   629
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1591
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   728,
+   1279,
+   738,
+   1289
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.883
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   70,
+   3297,
+   82,
+   3309
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9257
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   895,
+   1030,
+   913,
+   1048
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0784
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   305,
+   1453,
+   359,
+   1507
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9786
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   67,
+   3023,
+   77,
+   3033
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.6557
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1059,
+   322,
+   1069,
+   332
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0799
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1329,
+   1813,
+   1359,
+   1843
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9863
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1114,
+   1649,
+   1164,
+   1699
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9557
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1760,
+   1049,
+   1814,
+   1103
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9846
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1265,
+   737,
+   1287,
+   759
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9772
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2010,
+   1149,
+   2064,
+   1203
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9477
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   781,
+   1305,
+   811,
+   1335
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9901
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1905,
+   1329,
+   1915,
+   1339
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.8571
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   920,
+   2906,
+   970,
+   2956
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.98
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1506,
+   1345,
+   1530,
+   1369
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9858
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   157,
+   129,
+   179,
+   151
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9787
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   610,
+   2226,
+   622,
+   2238
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6162
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   762,
+   1902,
+   782,
+   1922
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0894
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   2048,
+   947,
+   2074,
+   973
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.98
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   457,
+   399,
+   485,
+   427
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9843
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1953,
+   2959,
+   2003,
+   3009
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9601
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   693,
+   163,
+   703,
+   173
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5083
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   74,
+   618,
+   86,
+   630
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.2499
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   1813,
+   2055,
+   1867,
+   2109
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9658
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1252,
+   759,
+   1262,
+   769
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1341
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   399,
+   2826,
+   409,
+   2836
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.0799
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   186,
+   2977,
+   200,
+   2991
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3424
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   554,
+   1270,
+   566,
+   1282
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.3314
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   1129,
+   2707,
+   1157,
+   2735
+  ],
+  "label": "checked",
+  "model_says": "checked",
+  "confidence": 0.9739
+ },
+ {
+  "image": "sample_4_1004c_watermark.png",
+  "bbox": [
+   450,
+   1302,
+   478,
+   1330
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9903
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   658,
+   498,
+   676,
+   516
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9655
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   67,
+   1523,
+   77,
+   1533
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.3642
+ },
+ {
+  "image": "sample_1_urar_1004.png",
+  "bbox": [
+   2108,
+   2250,
+   2162,
+   2304
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9741
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   1602,
+   2326,
+   1614,
+   2338
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "unchecked",
+  "confidence": 0.6162
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   700,
+   134,
+   714,
+   148
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.9784
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   897,
+   771,
+   907,
+   781
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "rejected",
+  "confidence": 0.1278
+ },
+ {
+  "image": "sample_2_crop_zoomed.jpeg",
+  "bbox": [
+   1268,
+   749,
+   1280,
+   761
+  ],
+  "label": "not_a_checkbox",
+  "model_says": "checked",
+  "confidence": 0.5638
+ },
+ {
+  "image": "sample_3_1004mc_shaded.png",
+  "bbox": [
+   2010,
+   1297,
+   2064,
+   1351
+  ],
+  "label": "unchecked",
+  "model_says": "unchecked",
+  "confidence": 0.9782
+ }
+]
