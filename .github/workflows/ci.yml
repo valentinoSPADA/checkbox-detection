@@ -285,10 +285,18 @@ jobs:
     name: Deploy to Fly.io
     runs-on: ubuntu-latest
     needs: [images, quality]
-    # Only from main, and only when a token exists. A fork's pull request has no access to
-    # secrets, and a deploy step that fails for that reason would make every external
-    # contribution look broken.
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    # MANUAL ONLY, and that is a decision rather than an omission.
+    #
+    # The challenge asks for build and run instructions, not a hosted URL, so nothing is
+    # published. What is wired here is a real deploy rather than a stub: the image it ships is
+    # built and smoke-tested by the job above, under the same 512 MB limit fly.toml requests.
+    # Running it needs one secret and one `fly launch`.
+    #
+    # Manual rather than on-push because an automatic deploy without FLY_API_TOKEN configured
+    # is a permanently red pipeline that says nothing about the code. A red build should mean
+    # something is broken.
+    if: github.event_name == 'workflow_dispatch'
     concurrency:
       group: deploy-production
       cancel-in-progress: false
@@ -297,6 +305,17 @@ jobs:
       url: https://checkbox-detection.fly.dev
     steps:
       - uses: actions/checkout@v4
+
+      - name: Require a deploy token
+        # Checked in a step, not in the job's `if`: the secrets context is not available in a
+        # job-level condition. Failing here with a sentence is better than failing inside
+        # flyctl with an auth error that reads like an outage.
+        run: |
+          if [ -z "${{ secrets.FLY_API_TOKEN }}" ]; then
+            echo "FLY_API_TOKEN is not configured."
+            echo "Create one with 'fly tokens create deploy' and add it to the repository secrets."
+            exit 1
+          fi
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
 

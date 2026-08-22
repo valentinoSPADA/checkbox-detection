@@ -91,10 +91,16 @@ container exits.** That is the opposite of what a supervisor normally does, and 
 an API left running after its sidecar has crashed reports itself as up while failing every
 request.
 
-CI builds this image on every push, smoke-tests it *under the same 512 MB limit*, and deploys
-from `main`. The memory limit is part of the test rather than a note in a document, because a
-regression that pushes peak memory past it is an OOM kill in production and a green suite
-everywhere else.
+**Nothing is published.** The challenge asks for build and run instructions, not a hosted URL,
+so the deploy is wired and verified but never fired: `fly launch` and one secret are all it
+needs. What CI does run on every push is the *image build and its smoke test*, under the same
+512 MB limit — that is the part with something to say about the code. The memory limit belongs
+in the test rather than in a document, because a regression that pushes peak memory past it is
+an OOM kill in production and a green suite everywhere else.
+
+The deploy job itself is `workflow_dispatch` only. An automatic deploy with no `FLY_API_TOKEN`
+configured is a permanently red pipeline that says nothing, and a red build should mean
+something is broken.
 
 ### Running without Docker
 
@@ -379,6 +385,12 @@ Each tied to a signal in the job description rather than added for its own sake.
   models share the blind spot.
 - **Upload guards at the layer that can enforce each one** — byte size and sniffed content
   type at the gateway, pixel bounds where the decode happens.
+- **A deployment that was built and measured rather than described.** One container, verified
+  running under the 512 MB its `fly.toml` requests, detecting all four samples with zero OOM
+  kills. It is deliberately not published — the challenge asks for build and run instructions,
+  and a hosted URL is a maintenance commitment rather than evidence. The measurement is the
+  evidence: it is what proved the memory work was enough, and what would have caught it not
+  being.
 - **React + TypeScript overlay viewer** — for a detector, the overlay *is* the demo, and it
   answers the role's opening line about interfaces that let humans act on AI decisions.
 - **Structured JSON logging, `/health` and `/ready` split correctly**, graceful shutdown,
