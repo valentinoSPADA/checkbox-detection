@@ -1,5 +1,11 @@
 # Checkbox Detection
 
+**A take-home challenge submission for HomeVision.** Not a HomeVision product, not affiliated
+with or endorsed by them; their wordmark appears in the UI header and here only to say who the
+submission is for. The interface deliberately borrows the visual language of homevision.co —
+the palette, the radii, the shadow — because a tool for their reviewers should look like it
+belongs next to their product.
+
 Detects and classifies checkboxes in appraisal document images, behind the `POST /detect`
 endpoint the challenge specifies.
 

@@ -327,3 +327,36 @@ describe('upload guards', () => {
     expect((screen.getByRole('button', { name: /detect/i }) as HTMLButtonElement).disabled).toBe(false)
   })
 })
+
+describe('attribution', () => {
+  /**
+   * The HomeVision mark is third-party branding on a page that is not theirs. These tests
+   * exist so a refactor cannot quietly turn attribution into what looks like ownership —
+   * dropping the label and leaving the logo would do exactly that, and would still render
+   * fine, which is why it needs a test rather than a comment.
+   */
+  it('never shows the logo without the sentence that frames it', async () => {
+    stubFetch()
+    render(<App />)
+
+    const logo = screen.getByRole('img', { name: 'HomeVision' })
+    const line = logo.closest('.attrib')
+    expect(line).not.toBeNull()
+    expect(line!.textContent).toMatch(/take-home challenge for/i)
+  })
+
+  it('keeps the app’s own identity primary', async () => {
+    // The header must still say what this thing is. If the only name in it were HomeVision's,
+    // the page would read as their product regardless of the label.
+    stubFetch()
+    render(<App />)
+    expect(screen.getByText('Checkbox Detection')).toBeDefined()
+  })
+
+  it('announces the whole phrase to a screen reader, not just the mark', async () => {
+    stubFetch()
+    render(<App />)
+    const line = screen.getByRole('img', { name: 'HomeVision' }).closest('.attrib')
+    expect(line!.textContent!.replace(/\s+/g, ' ').trim()).toBe('Take-home challenge for')
+  })
+})

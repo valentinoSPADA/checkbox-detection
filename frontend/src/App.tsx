@@ -11,6 +11,7 @@ import { applyTheme, initialTheme, type Theme } from './lib/theme'
 import { Overlay } from './components/Overlay'
 import { Lightbox } from './components/Lightbox'
 import { Icon } from './components/Icon'
+import { HomeVisionLogo } from './components/HomeVisionLogo'
 import { ResultSkeleton } from './components/ResultSkeleton'
 import { useDetectProgress } from './lib/useDetectProgress'
 
@@ -155,6 +156,16 @@ export default function App() {
             <span className="brand__sub">Appraisal document extraction</span>
           </span>
         </div>
+
+        {/*
+          Attribution, not branding. The logo is never shown on its own — the sentence around
+          it is what makes clear this is a submission *for* HomeVision rather than a product
+          *of* HomeVision, so the wording and the mark travel together as one element.
+        */}
+        <p className="attrib">
+          Take-home challenge for
+          <HomeVisionLogo />
+        </p>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span className="pill">

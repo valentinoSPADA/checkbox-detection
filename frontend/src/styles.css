@@ -108,6 +108,47 @@ input[type='range'] {
   border-bottom: 1px solid var(--border);
 }
 
+/*
+ * Attribution line in the header: "Take-home challenge for [HomeVision]".
+ *
+ * The label and the mark are one flex line and never separate, because the label is what makes
+ * the mark's presence honest — a logo sitting alone in a header claims ownership of the page.
+ *
+ * The colour is HomeVision's own indigo, unchanged in both themes. It could be lightened for
+ * dark mode, and is not: it clears the 3:1 contrast a graphical object needs (3.9:1 on the
+ * dark surface), and a brand rendered in a colour its owner did not choose is a worse outcome
+ * than a slightly quieter one.
+ */
+.attrib {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.attrib svg {
+  color: #5865f3;
+  /* Optically aligned: the wordmark's baseline sits below the label's without this. */
+  transform: translateY(0.5px);
+}
+
+/*
+ * Below ~900px the header has room for the app's own identity and its controls, and not for a
+ * third thing. The attribution is hidden rather than wrapped, because a line that reads
+ * "Take-home challenge for" with the mark pushed onto its own row loses the sentence that
+ * makes it attribution. The README carries the same statement for anyone on a phone.
+ */
+@media (max-width: 900px) {
+  .attrib {
+    display: none;
+  }
+}
+
 .brand {
   display: flex;
   align-items: center;
