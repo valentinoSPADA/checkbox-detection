@@ -397,6 +397,13 @@ Each tied to a signal in the job description rather than added for its own sake.
   models share the blind spot.
 - **Upload guards at the layer that can enforce each one** — byte size and sniffed content
   type at the gateway, pixel bounds where the decode happens.
+- **SonarCloud in CI, with findings acted on rather than tuned away.** Quality gate passing;
+  0 bugs, 0.0% duplication, 92.7% coverage, maintainability A. Its first real run found three
+  things worth fixing and they were fixed: a secret interpolated into a shell block, four
+  actions pinned to mutable refs (one to `@master`, with deploy credentials in scope), and
+  click handlers with no keyboard path in shipped UI code. Eight taint findings remain, all
+  in offline tooling or a sanitiser the analyser cannot recognise — triaged in
+  `sonar-project.properties` with the reasoning, not hidden by an exclusion.
 - **A live deployment, measured rather than described.** One container on Fly, scaling to
   zero, at <https://checkbox-detection.fly.dev>. The 512 MB it requests is a measured number:
   peak is 236 MiB under sustained load including concurrent pages, with zero OOM kills. It
