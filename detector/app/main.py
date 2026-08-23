@@ -51,24 +51,37 @@ MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(25 * 1024 * 1024)))
 # upload cannot push a megabyte through the logging pipeline.
 _LOG_FIELD_MAX = 120
 
+# The characters a filename may contribute to a log line. An allow list rather than a list of
+# things to escape: the set of characters that can break out of a JSON string is a judgement
+# call, and the set that obviously cannot is a fact.
+_LOG_SAFE_CHARS = frozenset(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
+)
+
 
 def _safe_for_log(value: str | None) -> str:
-    """Make a caller-supplied string safe to interpolate into a log line.
+    """Reduce a caller-supplied string to something that cannot alter a log record.
 
-    The log format here is JSON assembled by a format string, so an uploaded filename goes
-    into it verbatim. A name containing a quote or a newline therefore forges log entries --
-    an attacker chooses the filename, and every field after it in the record. Escaping the
-    two characters that can break out, plus stripping the other control codes, removes that.
+    The log format here is JSON assembled by a format string, so an uploaded filename lands in
+    it verbatim: a name containing a quote or a newline forges log entries, and every field
+    after it in the record. An earlier version escaped the dangerous characters. This one
+    keeps only safe ones instead, which is the stronger direction -- an escape list can miss a
+    character, an allow list cannot -- and it is what makes the result provably independent of
+    the input's structure rather than of the author's imagination.
 
-    Truncated as well, because the length of the field is also attacker-chosen.
+    Truncated as well, because the field's length is attacker-chosen too.
+
+    What is lost is exactness: a name with a space or an accent comes back without them. That
+    is the right trade for a field whose only job is to identify which upload a line refers to.
     """
     if not value:
         return "-"
-    cleaned = "".join(ch for ch in value if ch.isprintable())
-    cleaned = cleaned.replace("\\", "\\\\").replace('"', '\\"')
-    if len(cleaned) <= _LOG_FIELD_MAX:
-        return cleaned
-    return cleaned[:_LOG_FIELD_MAX] + "…"
+    kept = [ch for ch in value if ch in _LOG_SAFE_CHARS]
+    if not kept:
+        return "-"
+    if len(kept) <= _LOG_FIELD_MAX:
+        return "".join(kept)
+    return "".join(kept[:_LOG_FIELD_MAX]) + "~"
 
 
 _state: dict[str, object] = {}

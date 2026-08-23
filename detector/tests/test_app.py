@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import _log_level, _safe_for_log, app
+from app.main import _LOG_SAFE_CHARS, _log_level, _safe_for_log, app
 
 
 def png_bytes(width: int = 200, height: int = 150) -> bytes:
@@ -118,35 +118,35 @@ def test_upload_stream_is_not_required_to_be_seekable():
 class TestSafeForLog:
     """Filenames are attacker-chosen and the log line is JSON built by a format string.
 
-    A name carrying a quote or a newline therefore forges log entries -- and every field after
-    it in the record. Sanitising is the fix; these pin the cases that matter.
+    A name carrying a quote or a newline would forge log entries -- and every field after it in
+    the record. The defence is an allow list rather than an escape list, because the set of
+    characters that can break out is a judgement call and the set that obviously cannot is a
+    fact.
     """
 
-    def test_ordinary_names_pass_through(self):
+    def test_ordinary_names_pass_through_unchanged(self):
         assert _safe_for_log("sample_1_urar_1004.png") == "sample_1_urar_1004.png"
 
-    def test_quotes_are_escaped_not_dropped(self):
-        # Escaped rather than removed: the name still identifies the upload in a support
-        # conversation, which is the only reason it is logged at all.
-        assert _safe_for_log('a"b') == 'a\\"b'
-        # One backslash in, two out. Spelled with chr(92) because the shell heredoc
-        # that first wrote this test silently ate one of the escapes.
-        assert _safe_for_log('back' + chr(92) + 'slash') == 'back' + chr(92) * 2 + 'slash'
-
     def test_a_forged_log_record_cannot_survive(self):
-        got = _safe_for_log('x\n{"level":"ERROR","msg":"breach"}')
-        assert "\n" not in got
-        assert '\\"' in got, "the injected quotes must be escaped, not passed through"
+        forged = 'x' + chr(10) + '{"level":"ERROR","msg":"breach"}'
+        got = _safe_for_log(forged)
+        for ch in '"' + chr(10) + '{}:,':
+            assert ch not in got, f"{ch!r} survived and can still alter the record"
 
-    def test_control_characters_are_stripped(self):
-        assert _safe_for_log("ok\x00\x07\x1b[31m.png") == "ok[31m.png"
+    def test_every_returned_character_is_on_the_allow_list(self):
+        # The property, not a sample of cases: whatever goes in, what comes out is drawn from
+        # a fixed alphabet, so no input can introduce structure.
+        hostile = "".join(chr(c) for c in range(1, 1000))
+        assert set(_safe_for_log(hostile)) <= set(_LOG_SAFE_CHARS)
 
     def test_length_is_bounded(self):
-        # The field's length is attacker-chosen too; a 10 MB filename should not become a
+        # The field's length is attacker-chosen too; a 10 MB filename must not become a
         # 10 MB log line.
-        got = _safe_for_log("A" * 5000)
-        assert len(got) < 200
+        assert len(_safe_for_log("A" * 5000)) < 200
 
-    def test_a_missing_filename_is_a_placeholder_not_the_word_none(self):
+    def test_a_name_with_nothing_safe_left_is_a_placeholder(self):
+        # Not the empty string: an empty field in the middle of a log line reads as a bug in
+        # the logger rather than as a filename that carried no usable characters.
+        assert _safe_for_log("////") == "-"
         assert _safe_for_log(None) == "-"
         assert _safe_for_log("") == "-"

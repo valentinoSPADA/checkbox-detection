@@ -452,3 +452,73 @@ describe('the loading state does not shift the result', () => {
     expect(skeleton.querySelector('.viewer__status')).toBeNull()
   })
 })
+
+describe('the preview and the lightbox are usable without a mouse', () => {
+  /**
+   * These cover the keyboard paths added after SonarCloud flagged click handlers on
+   * non-interactive elements. The finding was real: the preview could only be opened by
+   * clicking, and the lightbox wrapped its image in a div whose only job was to swallow
+   * clicks — unreachable by keyboard and invisible to assistive technology.
+   */
+  async function renderWithResult() {
+    const fetchMock = stubFetch({
+      boxes: [{ bbox: [10, 20, 32, 42], is_checked: true, confidence: 0.98, source: 'local' }],
+      meta: { ...emptyMeta(), width: 400, height: 300, stats: { candidates: 1, returned: 1 } },
+    })
+    render(<App />)
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+    pickFile()
+    fireEvent.click(screen.getByRole('button', { name: /^detect$/i }))
+    await waitFor(() => expect(detectCalls(fetchMock)).toHaveLength(1))
+  }
+
+  it('exposes the preview as a focusable control, not a bare image', async () => {
+    await renderWithResult()
+    const preview = await screen.findByRole('button', { name: /open the page at full size/i })
+    expect(preview.getAttribute('tabindex')).toBe('0')
+  })
+
+  it('opens the lightbox with Enter and with Space', async () => {
+    for (const key of ['Enter', ' ']) {
+      await renderWithResult()
+      const preview = await screen.findByRole('button', { name: /open the page at full size/i })
+      fireEvent.keyDown(preview, { key })
+      expect(await screen.findByRole('dialog')).toBeDefined()
+      cleanup()
+    }
+  })
+
+  it('ignores other keys, so typing does not open a dialog', async () => {
+    await renderWithResult()
+    const preview = await screen.findByRole('button', { name: /open the page at full size/i })
+    fireEvent.keyDown(preview, { key: 'a' })
+    fireEvent.keyDown(preview, { key: 'Tab' })
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('closes on a backdrop click but not on a click on the page itself', async () => {
+    // The distinction the removed stopPropagation wrapper used to provide, now decided by
+    // comparing the event target with the element the handler is on.
+    await renderWithResult()
+    fireEvent.click(await screen.findByRole('button', { name: /expand/i }))
+    const dialog = await screen.findByRole('dialog')
+
+    const overlay = dialog.querySelector('.overlay') as HTMLElement
+    fireEvent.click(overlay)
+    expect(screen.queryByRole('dialog')).not.toBeNull()
+
+    fireEvent.click(dialog.querySelector('.lightbox__stage') as HTMLElement)
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  })
+
+  it('leaves a non-clickable overlay without a button role', async () => {
+    // The lightbox's own overlay takes no onClick, and must not advertise itself as a
+    // control that does nothing.
+    await renderWithResult()
+    fireEvent.click(await screen.findByRole('button', { name: /expand/i }))
+    const dialog = await screen.findByRole('dialog')
+    const overlay = dialog.querySelector('.overlay') as HTMLElement
+    expect(overlay.getAttribute('role')).toBeNull()
+    expect(overlay.getAttribute('tabindex')).toBeNull()
+  })
+})
