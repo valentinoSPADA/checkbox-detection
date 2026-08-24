@@ -231,7 +231,13 @@ jobs:
       - name: Build UI image
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
-          context: ./frontend
+          # Repository root, matching docker-compose.yml: the Vite config reads `samples/` at
+          # config time to build the sample picker's list, and that directory is outside
+          # ./frontend. Building from the narrower context does not fail obviously -- the
+          # picker simply renders nothing, because an empty list is a valid list -- so the
+          # two must be kept in step.
+          context: .
+          file: frontend/Dockerfile
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -266,6 +272,11 @@ jobs:
           # The UI must be served by the same binary that answers /detect; a 404 here means
           # the embed picked up the committed placeholder instead of the built bundle.
           curl -fsS http://localhost:8099/ | grep -qi "<div id=\"root\""             || { echo "the embedded UI is the placeholder, not the built bundle"; exit 1; }
+          # The sample pages must ship with the image. This is asserted rather than assumed
+          # because its absence is silent: the picker renders nothing and the page still
+          # works, so a reviewer opening the demo just finds no way to try it.
+          curl -fsS -o /dev/null http://localhost:8099/sample-pages/sample_1_urar_1004.png             || { echo "sample pages missing from the image; check .dockerignore and the ui build context"; exit 1; }
+          curl -fsS -o /dev/null http://localhost:8099/samples/sample_1_urar_1004.jpg             || { echo "sample thumbnails missing; run tools/make_sample_thumbs.py"; exit 1; }
           curl -fsS -X POST -F "file=@samples/sample_1_urar_1004.png"             "http://localhost:8099/detect" -o deploy.json
           python3 -c "import json; d=json.load(open('deploy.json'));             assert len(d['boxes']) > 50, d; print('deployment image detected', len(d['boxes']))"
           test "$(docker inspect -f '{{.State.OOMKilled}}' deploy-smoke)" = "false"             || { echo "the container was OOM-killed at its production memory limit"; exit 1; }
