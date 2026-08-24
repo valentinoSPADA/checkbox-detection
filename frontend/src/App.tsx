@@ -13,6 +13,7 @@ import { Lightbox } from './components/Lightbox'
 import { Icon } from './components/Icon'
 import { HomeVisionLogo } from './components/HomeVisionLogo'
 import { ResultSkeleton } from './components/ResultSkeleton'
+import { SamplePicker } from './components/SamplePicker'
 import { useDetectProgress } from './lib/useDetectProgress'
 import { useRailOffset } from './lib/useRailOffset'
 
@@ -232,6 +233,13 @@ export default function App() {
                 </>
               )}
             </label>
+
+            {/*
+              The supplied pages, one click away. It routes through the same onFile the file
+              input uses, so a sample is validated, previewed and posted exactly like an
+              upload -- the thing a reviewer clicks is the thing the app does.
+            */}
+            <SamplePicker onPick={onFile} selected={file?.name} disabled={busy} />
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button className="btn btn--primary" onClick={onDetect} disabled={!file || busy}>

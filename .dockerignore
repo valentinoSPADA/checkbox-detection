@@ -15,7 +15,9 @@ detector/training
 design
 docs
 eval
-samples
+# samples/ is NOT excluded: the frontend build reads it to construct the sample picker and
+# copies it into the bundle. Excluding it does not fail the build -- the picker just renders
+# nothing, because an empty list is a valid list.
 *.md
 .env
 .env.*

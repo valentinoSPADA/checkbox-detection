@@ -49,6 +49,11 @@ first request cannot land on a sidecar whose model is still loading.
 - Overlay viewer — <http://localhost:5173>
 - API — <http://localhost:8080>
 
+**Nothing to download to try it.** The viewer offers the four supplied pages as thumbnails:
+one click loads a page, then press Detect. They are the four cases the detector was built
+against, and each defeated an earlier version of it — shaded rows broke global thresholding,
+the watermark broke a colour assumption, and the zoomed crop broke a fixed pixel size range.
+
 ```bash
 curl -X POST -F "file=@samples/sample_1_urar_1004.png" http://localhost:8080/detect
 ```
@@ -408,6 +413,11 @@ Each tied to a signal in the job description rather than added for its own sake.
   click handlers with no keyboard path in shipped UI code. Eight taint findings remain, all
   in offline tooling or a sanitiser the analyser cannot recognise — triaged in
   `sonar-project.properties` with the reasoning, not hidden by an exclusion.
+- **The supplied pages are one click away in the UI**, so judging the detector does not start
+  with finding a file on disk — and someone opening the hosted demo has something to try it on
+  at all. They are served from `samples/`, the same directory the README's curl and
+  `eval/evaluate.py` use, rather than copied into the frontend where a second copy could drift
+  from the one every measurement is made against.
 - **A live deployment, measured rather than described.** One container on Fly, scaling to
   zero, at <https://checkbox-detection.fly.dev>. The 512 MB it requests is a measured number:
   peak is 236 MiB under sustained load including concurrent pages, with zero OOM kills. It

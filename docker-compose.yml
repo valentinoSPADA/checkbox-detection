@@ -75,7 +75,12 @@ services:
 
   ui:
     build:
-      context: ./frontend
+      # Repository root, not ./frontend: the Vite config reads `samples/` at config time so
+      # the sample picker offers exactly the pages that exist on disk. With the narrower
+      # context that directory is simply absent inside the build, and the picker renders
+      # nothing -- silently, since an empty list is a valid list.
+      context: .
+      dockerfile: frontend/Dockerfile
       args:
         # The address the *browser* uses. The compose-internal hostname would not resolve
         # outside the network, so this must be the published host port.

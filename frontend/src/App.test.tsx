@@ -522,3 +522,114 @@ describe('the preview and the lightbox are usable without a mouse', () => {
     expect(overlay.getAttribute('tabindex')).toBeNull()
   })
 })
+
+describe('sample pages', () => {
+  /**
+   * The picker exists so that judging the detector does not first require finding the
+   * repository on disk — a reviewer opening the hosted demo had nothing to try it on.
+   */
+  function stubWithSamples(detectBody: unknown = { boxes: [], meta: emptyMeta() }) {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.includes('/engines')) {
+        return { ok: true, status: 200, json: async () => ({ engines: ['local'], default: 'local' }) } as Response
+      }
+      if (url.includes('/sample-pages/')) {
+        return {
+          ok: true,
+          status: 200,
+          blob: async () => new Blob(['fake-png-bytes'], { type: 'image/png' }),
+        } as Response
+      }
+      return { ok: true, status: 200, json: async () => detectBody } as Response
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    return fetchMock
+  }
+
+  it('offers every supplied page', async () => {
+    stubWithSamples()
+    render(<App />)
+    const buttons = await screen.findAllByRole('button', { name: /^load /i })
+    expect(buttons.length).toBe(4)
+  })
+
+  it('describes what each page is, not just its filename', async () => {
+    // The caption is an abbreviation a sighted user reads next to a picture. The accessible
+    // name has to carry what the picture shows.
+    stubWithSamples()
+    render(<App />)
+    expect(await screen.findByRole('button', { name: /red watermark/i })).toBeDefined()
+    expect(screen.getByRole('button', { name: /shaded table rows/i })).toBeDefined()
+  })
+
+  it('loads a page without detecting it', async () => {
+    // Same rule the file input follows: choosing what to run and choosing to run it are
+    // different decisions, and a page is several seconds of CPU.
+    const fetchMock = stubWithSamples()
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /red watermark/i }))
+
+    await waitFor(() =>
+      expect(screen.getByText('sample_4_1004c_watermark.png')).toBeDefined(),
+    )
+    expect(detectCalls(fetchMock)).toHaveLength(0)
+    expect((screen.getByRole('button', { name: /^detect$/i }) as HTMLButtonElement).disabled).toBe(false)
+  })
+
+  it('marks which page is loaded', async () => {
+    // Without this, clicking a thumbnail and then pressing Detect gives no indication of
+    // which of the four is about to run.
+    stubWithSamples()
+    render(<App />)
+    const target = await screen.findByRole('button', { name: /red watermark/i })
+    fireEvent.click(target)
+    await waitFor(() => expect(target.className).toContain('samples__item--active'))
+  })
+
+  it('names the page that failed rather than saying "something went wrong"', async () => {
+    // The realistic failure is a build where the sample directory was not copied in, and the
+    // filename is what points at that.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input)
+        if (url.includes('/engines')) {
+          return { ok: true, status: 200, json: async () => ({ engines: ['local'], default: 'local' }) } as Response
+        }
+        return { ok: false, status: 404 } as Response
+      }),
+    )
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /red watermark/i }))
+    expect(await screen.findByText(/Watermarked could not be loaded/i)).toBeDefined()
+  })
+
+  it('is disabled while a detection is running', async () => {
+    // Swapping the page mid-run would leave the result labelled with a file that is no longer
+    // the one on screen.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input)
+        if (url.includes('/engines')) {
+          return { ok: true, status: 200, json: async () => ({ engines: ['local'], default: 'local' }) } as Response
+        }
+        if (url.includes('/sample-pages/')) {
+          return { ok: true, status: 200, blob: async () => new Blob(['x'], { type: 'image/png' }) } as Response
+        }
+        return new Promise<Response>(() => {})
+      }),
+    )
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /red watermark/i }))
+    await waitFor(() => expect(screen.getByText('sample_4_1004c_watermark.png')).toBeDefined())
+    fireEvent.click(screen.getByRole('button', { name: /^detect$/i }))
+
+    await waitFor(() =>
+      expect(
+        (screen.getByRole('button', { name: /red watermark/i }) as HTMLButtonElement).disabled,
+      ).toBe(true),
+    )
+  })
+})

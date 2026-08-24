@@ -29,6 +29,12 @@ RUN npm ci
 
 COPY frontend/ ./
 
+# The sample pages, from the one place they live. The Vite config reads this directory to
+# build the picker's list and copies it into the bundle, so a deployed instance ships with
+# something to try it on -- see the `sample-pages` plugin for why they are not duplicated
+# into the frontend.
+COPY samples/ /samples/
+
 # The bundle is served by the same origin that answers /detect, so the API base is relative.
 # The literal is a sentinel rather than an empty string -- see SAME_ORIGIN in lib/api.ts for
 # why "empty means same origin" is a rule this codebase deliberately does not have.

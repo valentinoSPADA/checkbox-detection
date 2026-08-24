@@ -7,10 +7,15 @@ WORKDIR /app
 # Lockfile-first for layer caching. `npm ci` rather than `npm install` so the image is built
 # from the exact resolved tree the tests ran against, not from whatever satisfies the ranges
 # on the day of the build.
-COPY package.json package-lock.json* ./
+COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci
 
-COPY . .
+COPY frontend/ ./
+
+# The sample pages, from the one place they live. The Vite config reads this directory to
+# build the picker's list and copies it into the bundle; see the `sample-pages` plugin for why
+# they are not duplicated into the frontend.
+COPY samples/ /samples/
 
 # Baked at build time because Vite inlines env vars into the bundle -- there is no runtime
 # environment in a static build to read them from. Compose passes the host-visible address of
@@ -24,7 +29,7 @@ RUN npm run build
 FROM nginx:1.27-alpine AS runtime
 
 COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 

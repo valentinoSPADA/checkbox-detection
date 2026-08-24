@@ -16,7 +16,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "types": ["vite/client", "vitest/globals"]
+    // node: vite.config.ts reads the repository's samples/ directory at config time,
+    // which is Node code compiled by the same tsconfig as the browser bundle.
+    "types": ["vite/client", "vitest/globals", "node"]
   },
   "include": ["src", "vite.config.ts", "eslint.config.js"]
 }

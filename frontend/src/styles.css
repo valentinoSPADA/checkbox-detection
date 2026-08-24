@@ -809,3 +809,70 @@ input[type='range'] {
     transition: none;
   }
 }
+
+/* ── Sample picker ───────────────────────────────────────────────────────── */
+
+/*
+ * Four thumbnails of the supplied pages. A grid rather than a row: the pages have very
+ * different aspect ratios (2550x4200 beside 1586x846), and a row would either stretch them or
+ * leave one a sliver. Fixed-height tiles with `object-fit: contain` keep every page's real
+ * shape while giving the four of them the same footprint.
+ */
+.samples {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.samples__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.samples__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-sunken);
+  cursor: pointer;
+  transition:
+    border-color 300ms ease,
+    background-color 300ms ease;
+}
+
+.samples__item:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
+.samples__item:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* The loaded page, marked. Without it, clicking a thumbnail and then pressing Detect gives no
+   indication of which of the four is about to run. */
+.samples__item--active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.samples__item img {
+  width: 100%;
+  height: 62px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: var(--paper);
+}
+
+.samples__caption {
+  font-size: 10px;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--muted);
+}
