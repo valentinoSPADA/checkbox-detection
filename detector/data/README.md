@@ -24,3 +24,7 @@ whether the detector is right.
 
 `source` on each record says which decided it: `model` for a Claude verdict that survived the
 pixel gate, `pixels` for a region settled locally without a call.
+
+`label.html` is deliberately absent: it is 13.5 MB of base64 crops that
+`python -m training.make_labeling_task` rebuilds in seconds. What could not be
+rebuilt -- the hour a person spent producing `labels_human.json` -- is committed.

@@ -28,3 +28,8 @@ docs/overlays/
 # in design/ (Main.dc.html, canvas.json, form-crop.jpg), which are the actual source.
 design/*.html
 !design/*.dc.html
+
+# Generated hand-labelling page: 13.5 MB of base64 crops, rebuilt in seconds by
+# `python -m training.make_labeling_task`. The labels it produced ARE committed
+# (data/labels_human.json) -- those cost a person an hour and cannot be regenerated.
+detector/data/label.html
