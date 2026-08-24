@@ -36,14 +36,18 @@ alternative; a paid model is still used **offline**, once, to label training dat
 
 ## Quick start
 
+One command, nothing to configure:
+
 ```bash
 docker compose up --build
 ```
 
-Then:
+Measured from no images at all: **~70 s to build and start**, and the stack is ready as soon
+as it returns — the API waits on the detector's health check rather than racing it, so the
+first request cannot land on a sidecar whose model is still loading.
 
-- API — <http://localhost:8080>
 - Overlay viewer — <http://localhost:5173>
+- API — <http://localhost:8080>
 
 ```bash
 curl -X POST -F "file=@samples/sample_1_urar_1004.png" http://localhost:8080/detect
